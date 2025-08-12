@@ -16,7 +16,7 @@ const buttonVariants = cva(
         outline:
           "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
         outlineDestructive:
-          "border border-destructive text-destructive bg-transparent hover:bg-destructive/50 focus-visible:ring-destructive",
+          "border border-destructive text-destructive bg-transparent hover:bg-destructive/50 hover:text-white focus-visible:ring-destructive",
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost:
@@ -38,18 +38,18 @@ const buttonVariants = cva(
 )
 
 const Button = React.forwardRef<
-  HTMLElement,
+  HTMLButtonElement,
   React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   }
 >((props, ref) => {
   const { className, variant, size, asChild = false, ...rest } = props
-  const Comp = asChild ? Slot : "span"
+  const Comp = asChild ? Slot : "button"
 
   return (
     <Comp
-      ref={ref as React.Ref<any>} // forțează cu un cast generic
+      ref={ref}
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...rest}

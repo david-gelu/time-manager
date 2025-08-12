@@ -41,6 +41,7 @@ import {
 import { Label } from "./components/ui/label"
 import { ExampleCombobox } from "./components/example-combobox"
 import Calendar from "./components/calendar"
+import Table from "./components/table/table"
 
 export default function App() {
   // toast("Event has been created.")
@@ -104,7 +105,7 @@ export default function App() {
                   </DialogContent>
                 </form>
               </Dialog>
-              <Calendar showTime selectionMode="range" />
+              <Calendar inline showTime selectionMode="range" />
               <ModeToggle />
             </div>
           </header>
@@ -160,6 +161,7 @@ export default function App() {
             <Textarea />
             <Input />
             <ExampleCombobox />
+            <Table />
           </div>
         </SidebarInset>
       </SidebarProvider>

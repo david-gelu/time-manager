@@ -41,6 +41,7 @@ const RAW_RUNTIME_STATE =
           ["@radix-ui/react-tooltip", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:1.2.7"],\
           ["@tailwindcss/postcss", "npm:4.1.11"],\
           ["@tailwindcss/vite", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:4.1.11"],\
+          ["@tanstack/react-table", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:8.21.3"],\
           ["@types/node", "npm:24.1.0"],\
           ["@types/react", "npm:18.3.23"],\
           ["@types/react-dom", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:18.3.7"],\
@@ -2327,6 +2328,42 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@tanstack/react-table", [\
+      ["npm:8.21.3", {\
+        "packageLocation": "../../../AppData/Local/Yarn/Berry/cache/@tanstack-react-table-npm-8.21.3-7772decaaa-10c0.zip/node_modules/@tanstack/react-table/",\
+        "packageDependencies": [\
+          ["@tanstack/react-table", "npm:8.21.3"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:8.21.3", {\
+        "packageLocation": "./.yarn/__virtual__/@tanstack-react-table-virtual-57eeca63ec/4/AppData/Local/Yarn/Berry/cache/@tanstack-react-table-npm-8.21.3-7772decaaa-10c0.zip/node_modules/@tanstack/react-table/",\
+        "packageDependencies": [\
+          ["@tanstack/react-table", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:8.21.3"],\
+          ["@tanstack/table-core", "npm:8.21.3"],\
+          ["@types/react", "npm:18.3.23"],\
+          ["@types/react-dom", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:18.3.7"],\
+          ["react", "npm:18.3.1"],\
+          ["react-dom", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:18.3.1"]\
+        ],\
+        "packagePeers": [\
+          "@types/react-dom",\
+          "@types/react",\
+          "react-dom",\
+          "react"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@tanstack/table-core", [\
+      ["npm:8.21.3", {\
+        "packageLocation": "../../../AppData/Local/Yarn/Berry/cache/@tanstack-table-core-npm-8.21.3-dac9d96299-10c0.zip/node_modules/@tanstack/table-core/",\
+        "packageDependencies": [\
+          ["@tanstack/table-core", "npm:8.21.3"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@tybys/wasm-util", [\
       ["npm:0.10.0", {\
         "packageLocation": "../../../AppData/Local/Yarn/Berry/cache/@tybys-wasm-util-npm-0.10.0-5601bb24f9-10c0.zip/node_modules/@tybys/wasm-util/",\
@@ -4248,6 +4285,7 @@ const RAW_RUNTIME_STATE =
           ["@radix-ui/react-tooltip", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:1.2.7"],\
           ["@tailwindcss/postcss", "npm:4.1.11"],\
           ["@tailwindcss/vite", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:4.1.11"],\
+          ["@tanstack/react-table", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:8.21.3"],\
           ["@types/node", "npm:24.1.0"],\
           ["@types/react", "npm:18.3.23"],\
           ["@types/react-dom", "virtual:84f77a82d50de7648740aad976d50053b649fcfb0b8381a13449f5a65a85fac7993efb28c5e4d109ea09b400e98759e6f5b1896e0141c4f8f03815450f44e1c0#npm:18.3.7"],\

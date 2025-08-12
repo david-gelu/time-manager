@@ -11,10 +11,12 @@ export default function Calendar({
   showTime,
   selectionMode = "single",
   desc,
+  inline
 }: {
   showTime?: boolean;
   selectionMode?: "single" | "multiple" | "range";
   desc?: string;
+  inline?: boolean;
 }) {
   const [dates, setDates] = useState<CalendarValue>(null);
 
@@ -54,8 +56,8 @@ export default function Calendar({
           <DialogDescription>{desc}</DialogDescription>
         </DialogHeader>
         <PrimereactCalendar
-          className="w-full max-w-full sm:max-w-[80vw] md:max-w-[70vw] lg:max-w-[40vw]"
-          inline
+          className="sm:max-w-[80vw] md:max-w-[70vw] lg:max-w-[40vw]"
+          inline={inline}
           id="calendar"
           value={dates}
           onChange={(e) => setDates(e.value)}
@@ -65,8 +67,18 @@ export default function Calendar({
           pt={{
             day: {
               className: ({ context }: { context: AllHTMLAttributes<HTMLDivElement> }) =>
-                context.selected ? "bg-blue-500 rounded-md" : "",
+                `${context.selected ? "bg-blue-500 rounded-md" : ""} p-1`,
+              daySpan: ({ context }: { context: AllHTMLAttributes<HTMLSpanElement> }) =>
+                `${context.selected ? "text-white" : "text-gray-700"} w-[1rem] ratio-1`
             },
+            root: { className: "p-1 text-xs" },
+            header: { className: "p-1 text-xs" },
+            monthTitle: { className: "px-1 py-0.5 text-xs" },
+            yearTitle: { className: "px-1 py-0.5 text-xs" },
+            timePicker: { className: "p-1 text-xs" },
+            hourPicker: { className: "p-0.5 text-xs" },
+            minutePicker: { className: "p-0.5 text-xs" },
+            secondPicker: { className: "p-0.5 text-xs" },
           }}
         />
 
@@ -81,7 +93,7 @@ export default function Calendar({
         }
 
         {showTime && selectionMode === "range" && Array.isArray(dates) &&
-          <div className="text-muted-foreground">
+          <div className="text-muted-foreground flex gap-2">
             <strong>Start time:</strong>{" "}
             {dates[0] instanceof Date ? format(dates[0], "HH:mm:ss") : "..."} <br />
             <strong>End time:</strong>{" "}
