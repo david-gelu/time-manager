@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from 'react'
+import React, { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from 'react'
 import {
   flexRender,
   getCoreRowModel,
@@ -21,6 +21,7 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
+import SubTable from './sub-table'
 
 type Person = {
   id: number
@@ -66,7 +67,6 @@ export default function TableComponent() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [globalFilter, setGlobalFilter] = useState<string>('')
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
-
   const STORAGE_KEY = 'table-column-widths'
 
   const loadSavedWidths = (): Record<string, number> => {
@@ -79,6 +79,7 @@ export default function TableComponent() {
     }
   }
   const [colWidths, setColWidths] = useState<Record<string, number>>(() => loadSavedWidths())
+
   useEffect(() => {
     if (Object.keys(colWidths).length > 0) {
       try {
@@ -161,7 +162,7 @@ export default function TableComponent() {
     const actionCol: ColumnDef<Person> = {
       id: "actions",
       enableHiding: false,
-      header: () => <div className="w-fit">Acțiuni</div>,
+      header: () => <div className="w-fit"></div>,
       cell: ({ row }) => {
         const person = row.original
         return (
@@ -227,7 +228,7 @@ export default function TableComponent() {
 
   const childTables = useMemo(() => {
     const tables: Record<number, any> = {}
-    const childColumns = columns.filter(col => col.id !== 'expander' && col.id !== 'actions')
+    const childColumns = columns.filter(col => col.id !== 'expander')
 
     data.forEach(person => {
       if (person.child && person.child.length > 0) {
@@ -308,97 +309,6 @@ export default function TableComponent() {
     return handleMouseDown
   }
 
-  const renderChildTable = (parentId: number) => {
-    const childTableData = childTables[parentId]
-    if (!childTableData) return null
-
-    return (
-      <div className="bg-muted/50 p-4 border-t">
-        <div className="overflow-x-auto">
-          <Table className="w-full text-sm">
-            <TableHeader>
-              <TableRow className="border-b bg-sidebar w-fit">
-                {visibleColumns.map((column) => (
-                  <TableHead
-                    key={column.id}
-                    className="text-left p-2 font-medium border-r last:border-r-0"
-                    style={{ width: `${colWidths[column.id] || 25}%` }}
-                  >
-                    {column.id === 'expander' ? '' : (
-                      typeof column.columnDef.header === 'function'
-                        ? column.id
-                        : column.columnDef.header
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {childTableData.data.map((child: Person, index: number) => (
-                <TableRow
-                  key={child.id || index}
-                  className="border-b hover:bg-muted/30 transition-colors w-fit"
-                >
-                  {visibleColumns.map((column) => {
-                    // expander gol în copil
-                    if (column.id === 'expander') {
-                      return (
-                        <TableCell
-                          key={column.id}
-                          className="p-2 border-r last:border-r-0"
-                          style={{
-                            width: `${colWidths[column.id] || 25}%`
-                          }}
-                        />
-                      )
-                    }
-
-                    let cellContent: React.ReactNode = ''
-                    const accessorKey = (column.columnDef as any).accessorKey
-
-                    if (typeof column.columnDef.cell === 'function') {
-                      try {
-                        cellContent = column.columnDef.cell({
-                          row: {
-                            original: child,
-                            getValue: (key: string) => child[key as keyof Person]
-                          }
-                        } as any)
-                      } catch {
-                        cellContent = accessorKey
-                          ? String(child[accessorKey as keyof Person] || '')
-                          : ''
-                      }
-                    } else if (accessorKey && accessorKey in child) {
-                      const value = child[accessorKey as keyof Person]
-                      cellContent = value ? String(value) : ''
-                    }
-
-                    return (
-                      <TableCell
-                        key={column.id}
-                        className="p-2 border-r last:border-r-0"
-                        style={{
-                          width: `${colWidths[column.id] || 25}%`,
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {cellContent}
-                      </TableCell>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    )
-  }
-
-
-
   return (
     <div className="px-4 w-full mx-auto">
       <div className="flex items-center justify-end py-1 gap-2">
@@ -460,7 +370,7 @@ export default function TableComponent() {
                     </div>
                     {index < headerGroup.headers.length - 1 && (
                       <MoveHorizontal
-                        className="absolute z-10 right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-5 w-8 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
+                        className="absolute z-10 right-0 translate-x-1/2 h-4 w-5 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
                         onMouseDown={handleMouseResize(header.id, index)}
                       />
                     )}
@@ -476,7 +386,7 @@ export default function TableComponent() {
                 const isExpanded = expandedRows.has(person.id)
 
                 return (
-                  <>
+                  <React.Fragment key={row.id}>
                     <TableRow
                       key={row.id}
                       className="border-b bg-background hover:bg-muted/30 transition-colors"
@@ -498,11 +408,15 @@ export default function TableComponent() {
                     {isExpanded && person.child && person.child.length > 0 && (
                       <TableRow key={`${row.id}-expanded`}>
                         <TableCell colSpan={visibleColumns.length} className="p-0">
-                          {renderChildTable(person.id)}
+                          <SubTable
+                            data={childTables[person.id]?.data}
+                            columns={childTables[person.id]?.columns}
+                            parentId={person.id}
+                          />
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </React.Fragment>
                 )
               })
             ) : (
