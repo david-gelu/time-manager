@@ -78,7 +78,6 @@ export default function SubTable({ data, columns, parentId }: SubTableProps) {
     }
   }
 
-  // Coloane vizibile și width-urile pentru acest sub-tabel
   const childVisibleColumns = columns
   const widths = childColWidths[parentId] || {}
 
