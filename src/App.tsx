@@ -4,13 +4,34 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { toast } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ModeToggle } from "./components/mode-toggle"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Sidebar, SidebarInset, SidebarProvider, SidebarTrigger } from "./components/ui/sidebar"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "./components/ui/breadcrumb"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "./components/ui/sidebar"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "./components/ui/breadcrumb"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -42,33 +63,194 @@ import { Label } from "./components/ui/label"
 import { ExampleCombobox } from "./components/example-combobox"
 import Calendar from "./components/calendar"
 import Table from "./components/table/table"
+import { Home, Inbox, ChevronRight, FileText, Settings, Users } from "lucide-react"
+import { Outlet, Link, useLocation } from "react-router"
+import { useState } from "react"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
 export default function App() {
-  // toast("Event has been created.")
+  const [openItems, setOpenItems] = useState<string[]>([])
+  const menuItems = [
+    {
+      title: "Home",
+      url: "/",
+      icon: Home,
+      children: [
+        { title: "Test", url: "/test", icon: FileText },
+        { title: "Profile", url: "/profile", icon: Users },
+        { title: "Settings", url: "/settings", icon: Settings }
+      ]
+    },
+    {
+      title: "Inbox",
+      url: "/inbox",
+      icon: Inbox,
+      children: []
+    },
+  ]
+
+  const location = useLocation()
+  const pathnames = location.pathname.split("/").filter(Boolean)
+
+  const toggleOpen = (title: string) => {
+    setOpenItems(prev =>
+      prev.includes(title)
+        ? prev.filter(item => item !== title)
+        : [...prev, title]
+    )
+  }
+
+  const isItemActive = (item: any) => {
+    if (location.pathname === item.url) return true
+    return item.children?.some((child: any) => location.pathname === child.url)
+  }
+
+  const generateBreadcrumbs = () => {
+    const breadcrumbs = []
+    let currentPath = ""
+
+    for (let i = 0; i < pathnames.length; i++) {
+      const segment = pathnames[i]
+      currentPath += `/${segment}`
+
+      let title = segment
+      let isParentPage = false
+
+      for (const menuItem of menuItems) {
+        if (menuItem.url === currentPath) {
+          title = menuItem.title
+          isParentPage = true
+          break
+        }
+        for (const child of menuItem.children || []) {
+          if (child.url === currentPath) {
+            title = child.title
+            break
+          }
+        }
+      }
+
+      const isLast = i === pathnames.length - 1
+
+      if (isParentPage && !isLast && i === 0) {
+        continue
+      }
+
+      if (breadcrumbs.length > 0) {
+        breadcrumbs.push(
+          <BreadcrumbSeparator key={`sep-${i}`} className="hidden md:block" />
+        )
+      }
+
+      breadcrumbs.push(
+        <BreadcrumbItem key={currentPath}>
+          {isLast ? (
+            <BreadcrumbPage>{title}</BreadcrumbPage>
+          ) : (
+            <BreadcrumbLink asChild>
+              <Link to={currentPath}>{title}</Link>
+            </BreadcrumbLink>
+          )}
+        </BreadcrumbItem>
+      )
+    }
+
+    return breadcrumbs
+  }
+
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <SidebarProvider>
-        <Sidebar >
-          <div>aaaa</div>
-          <div>bbbb</div>
-          <div>cccc</div>
-          <div>dddd</div>
-          <div>eeee</div>
+        <Sidebar>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {menuItems.map((item) => (
+                    <Collapsible
+                      key={item.title}
+                      open={openItems.includes(item.title)}
+                      onOpenChange={() => toggleOpen(item.title)}
+                    >
+                      <SidebarMenuItem>
+                        {item.children && item.children.length > 0 ? (
+                          <div className="w-full">
+                            <CollapsibleTrigger asChild>
+                              <SidebarMenuButton
+                                className="w-full"
+                              >
+                                <Link
+                                  to={item.url}
+                                  className="w-full flex items-center gap-2 pr-8"
+                                >
+                                  <item.icon />
+                                  <span>{item.title}</span>
+                                </Link>
+                                <ChevronRight className={`ml-auto h-4 w-4 hover:cursor-pointer hover:bg-background transition-transform ${openItems.includes(item.title) && " rotate-90"}`} />
+                              </SidebarMenuButton>
+                            </CollapsibleTrigger>
+                          </div>
+                        ) : (
+                          <SidebarMenuButton asChild>
+                            <Link to={item.url}>
+                              <item.icon />
+                              <span>{item.title}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        )}
+
+                        {item.children && item.children.length > 0 && (
+                          <CollapsibleContent>
+                            <SidebarMenuSub>
+                              {item.children.map((child) => (
+                                <SidebarMenuSubItem key={child.title}>
+                                  <SidebarMenuSubButton asChild>
+                                    <Link to={child.url}>
+                                      <child.icon className="h-4 w-4" />
+                                      <span>{child.title}</span>
+                                    </Link>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              ))}
+                            </SidebarMenuSub>
+                          </CollapsibleContent>
+                        )}
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
         </Sidebar>
+
         <SidebarInset>
+          {/* Header */}
           <header className="sticky top-0 w-full h-16 flex items-center justify-between px-4 z-50 bg-background shadow overflow-x-auto">
             <div className="flex items-center gap-2 min-w-0 w-full overflow-hidden">
               <SidebarTrigger />
               <Separator orientation="vertical" className="h-4" />
               <Breadcrumb className="truncate min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
                 <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">Building</BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Data</BreadcrumbPage>
-                  </BreadcrumbItem>
+                  {pathnames.length === 0 ? (
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Home</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  ) : (
+                    <>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link to="/">Home</Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator className="hidden md:block" />
+                      {generateBreadcrumbs()}
+                    </>
+                  )}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
@@ -82,8 +264,7 @@ export default function App() {
                     <DialogHeader>
                       <DialogTitle>Edit profile</DialogTitle>
                       <DialogDescription>
-                        Make changes to your profile here. Click save when you&apos;re
-                        done.
+                        Make changes to your profile here. Click save when you&apos;re done.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4">
@@ -97,7 +278,7 @@ export default function App() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button className=" bg-teal-400" type="submit">Save changes</Button>
+                      <Button className="bg-teal-400" type="submit">Save changes</Button>
                       <DialogClose asChild>
                         <Button variant="outlineDestructive">Cancel</Button>
                       </DialogClose>
@@ -109,7 +290,8 @@ export default function App() {
               <ModeToggle />
             </div>
           </header>
-          <div className="flex min-h-screen flex-col items-center justify-center">
+
+          {/* <div className="flex min-h-screen flex-col items-center justify-center">
             <Button>Click me</Button>
             <Tooltip>
               <TooltipTrigger>Hover me</TooltipTrigger>
@@ -162,7 +344,10 @@ export default function App() {
             <Input />
             <ExampleCombobox />
             <Table />
-          </div>
+          </div> */}
+          <main className="flex flex-col items-center justify-center">
+            <Outlet />
+          </main>
         </SidebarInset>
       </SidebarProvider>
     </ThemeProvider>

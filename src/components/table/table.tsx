@@ -1,4 +1,4 @@
-import React from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from 'react'
 import {
   flexRender,
   getCoreRowModel,
@@ -12,49 +12,55 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
-  type VisibilityState
+  type VisibilityState,
+  type HeaderContext,
+  type CellContext
 } from "@tanstack/react-table"
-
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { Input } from '../ui/input'
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, MoreHorizontal, Columns, MoveHorizontal, TableCellsMerge, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, MoreHorizontal, MoveHorizontal, Columns } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu"
+import { Input } from '../ui/input'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
+
 
 type Person = {
   id: number
   firstName: string
   lastName: string
   age: number
-  email: string
+  email: string,
+  test?: string
 }
 
+// PROBLEMĂ IDENTIFICATĂ: Datele duplicate cu același ID
+// Soluția: Fiecare înregistrare trebuie să aibă un ID unic
 const defaultData: Person[] = [
-  { id: 2, firstName: 'Maria', lastName: 'Popescu', age: 29, email: 'maria@example.com' },
-  { id: 3, firstName: 'Andrei', lastName: 'Ionescu', age: 42, email: 'andrei@example.com' },
-  { id: 4, firstName: 'Vasile', lastName: 'Georgescu', age: 25, email: 'elena@example.com' },
-  { id: 5, firstName: 'Ion', lastName: 'Marin', age: 38, email: 'ion@example.com' },
-  { id: 6, firstName: 'Ana', lastName: 'Radu', age: 31, email: 'ana@example.com' },
+  { id: 1, firstName: 'Maria', lastName: 'Popescu', age: 29, email: 'maria@example.com', test: 'test' },
+  { id: 2, firstName: 'Andrei', lastName: 'Ionescu', age: 42, email: 'andrei@example.com' },
+  { id: 3, firstName: 'Vasile', lastName: 'Georgescu', age: 25, email: 'vasile@example.com' }, // Fixed email
+  { id: 4, firstName: 'Ion', lastName: 'Marin', age: 38, email: 'ion@example.com' },
+  { id: 5, firstName: 'Ana', lastName: 'Radu', age: 31, email: 'ana@example.com' },
+  { id: 6, firstName: 'Elena', lastName: 'Dumitru', age: 33, email: 'elena@example.com' },
+  { id: 7, firstName: 'Mihai', lastName: 'Stoica', age: 45, email: 'mihai@example.com' },
+  { id: 8, firstName: 'Alexandra', lastName: 'Popa', age: 27, email: 'alexandra@example.com' },
+  { id: 9, firstName: 'Cristian', lastName: 'Nistor', age: 36, email: 'cristian@example.com' },
+  { id: 10, firstName: 'Diana', lastName: 'Coman', age: 32, email: 'diana@example.com' },
+  { id: 11, firstName: 'Gabriel', lastName: 'Vlad', age: 40, email: 'gabriel@example.com' },
+  { id: 12, firstName: 'Ioana', lastName: 'Preda', age: 28, email: 'ioana@example.com' },
+  { id: 13, firstName: 'Radu', lastName: 'Mocanu', age: 35, email: 'radu@example.com' },
+  { id: 14, firstName: 'Simona', lastName: 'Fieraru', age: 30, email: 'simona@example.com' },
+  { id: 15, firstName: 'Bogdan', lastName: 'Tudose', age: 41, email: 'bogdan@example.com' },
 ]
 
-export default function ResizableShadcnTable() {
-  const [data] = React.useState<Person[]>(() => [...defaultData])
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+export default function TableComponent() {
+  const [data] = useState<Person[]>(() => [...defaultData])
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [globalFilter, setGlobalFilter] = useState<string>('')
 
-  // Storage key for column widths
   const STORAGE_KEY = 'table-column-widths'
 
-  // Load saved widths from localStorage
   const loadSavedWidths = (): Record<string, number> => {
     try {
       const savedWidths = localStorage.getItem(STORAGE_KEY)
@@ -64,12 +70,8 @@ export default function ResizableShadcnTable() {
       return {}
     }
   }
-
-  // Column widths state for resizing - initialize with saved values
-  const [colWidths, setColWidths] = React.useState<Record<string, number>>(() => loadSavedWidths())
-
-  // Save column widths to localStorage whenever they change
-  React.useEffect(() => {
+  const [colWidths, setColWidths] = useState<Record<string, number>>(() => loadSavedWidths())
+  useEffect(() => {
     if (Object.keys(colWidths).length > 0) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(colWidths))
@@ -78,169 +80,67 @@ export default function ResizableShadcnTable() {
       }
     }
   }, [colWidths])
+  const generateColumns = (sampleData: Person[]): ColumnDef<Person>[] => {
+    if (!sampleData.length) return []
 
-  // Define columns using TanStack Table format
-  const columns = React.useMemo<ColumnDef<Person>[]>(() => [
-    {
-      accessorKey: "firstName",
-      id: "firstName",
-      header: ({ column }) => (
+    const keys = Object.keys(sampleData[0]).filter(k => k !== "id")
+
+    const dynamicCols = keys.map((key) => ({
+      accessorKey: key,
+      id: key,
+      header: ({ column }: HeaderContext<Person, unknown>) => (
         <div className="flex flex-col gap-2">
           <div
-            className="font-medium cursor-pointer select-none hover:bg-muted transition-colors flex items-center justify-between"
+            className="font-medium cursor-pointer select-none hover:bg-muted transition-colors flex items-center justify-between p-2"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            <span>Prenume</span>
+            <span>{key}</span>
             {column.getIsSorted() === "asc" ? (
-              <ArrowUpNarrowWide className="ml-2 h-4 w-4" />
+              <ArrowUpNarrowWide />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDownWideNarrow className="ml-2 h-4 w-4" />
+              <ArrowDownWideNarrow />
             ) : (
-              <ArrowDownWideNarrow className="ml-2 h-4 w-4 opacity-50" />
+              <span style={{ opacity: 0.5 }}>↓</span>
             )}
           </div>
-          <Input
-            type="text"
-            placeholder="Filtrează..."
-            className="w-full max-w-[120px] text-xs"
-            value={(column.getFilterValue() as string) ?? ""}
-            onChange={(event) => column.setFilterValue(event.target.value)}
-            onClick={(e) => e.stopPropagation()}
-          />
         </div>
       ),
-      cell: ({ row }) => <div>{row.getValue("firstName")}</div>,
+      cell: ({ row }: CellContext<Person, unknown>) => <div>{row.getValue(key)}</div>,
       enableSorting: true,
       enableHiding: true,
-    },
-    {
-      accessorKey: "lastName",
-      id: "lastName",
-      header: ({ column }) => (
-        <div className="flex flex-col gap-2">
-          <div
-            className="font-medium cursor-pointer select-none hover:bg-muted transition-colors flex items-center justify-between"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <span>Nume</span>
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUpNarrowWide className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDownWideNarrow className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowDownWideNarrow className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </div>
-          <Input
-            type="text"
-            placeholder="Filtrează..."
-            className="w-full max-w-[120px] text-xs"
-            value={(column.getFilterValue() as string) ?? ""}
-            onChange={(event) => column.setFilterValue(event.target.value)}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      ),
-      cell: ({ row }) => <div>{row.getValue("lastName")}</div>,
-      enableSorting: true,
-      enableHiding: true,
-    },
-    {
-      accessorKey: "age",
-      id: "age",
-      header: ({ column }) => (
-        <div className="flex flex-col gap-2">
-          <div
-            className="font-medium cursor-pointer select-none hover:bg-muted transition-colors flex items-center justify-between"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <span>Vârstă</span>
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUpNarrowWide className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDownWideNarrow className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowDownWideNarrow className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </div>
-          <Input
-            type="text"
-            placeholder="Filtrează..."
-            className="w-full max-w-[120px] text-xs"
-            value={(column.getFilterValue() as string) ?? ""}
-            onChange={(event) => column.setFilterValue(event.target.value)}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      ),
-      cell: ({ row }) => <div>{row.getValue("age")}</div>,
-      enableSorting: true,
-      enableHiding: true,
-    },
-    {
-      accessorKey: "email",
-      id: "email",
-      header: ({ column }) => (
-        <div className="flex flex-col gap-2">
-          <div
-            className="font-medium cursor-pointer select-none hover:bg-muted transition-colors flex items-center justify-between"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <span>Email</span>
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUpNarrowWide className="ml-2 h-4 w-4" />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDownWideNarrow className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowDownWideNarrow className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </div>
-          <Input
-            type="text"
-            placeholder="Filtrează..."
-            className="w-full max-w-[120px] text-xs"
-            value={(column.getFilterValue() as string) ?? ""}
-            onChange={(event) => column.setFilterValue(event.target.value)}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      ),
-      cell: ({ row }) => <div>{row.getValue("email")}</div>,
-      enableSorting: true,
-      enableHiding: true,
-    },
-    {
+    }))
+
+    const actionCol: ColumnDef<Person> = {
       id: "actions",
       enableHiding: false,
-      header: () => <div>Acțiuni</div>,
+      header: () => <div className="w-auto">Acțiuni</div>,
       cell: ({ row }) => {
         const person = row.original
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
+              <Button variant="ghost" className="h-6 w-6 p-0">
                 <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Acțiuni</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(String(person.id))}
-              >
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => navigator.clipboard?.writeText(String(person.id))}>
                 Copiază ID
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem>Vezi client</DropdownMenuItem>
               <DropdownMenuItem>Detalii plată</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )
-      },
-    },
-  ], [])
+      }
+    }
 
-  // Initialize TanStack Table
+    return [...dynamicCols, actionCol]
+  }
+
+  const columns = useMemo<ColumnDef<Person>[]>(() => generateColumns(data), [data])
+
   const table = useReactTable({
     data,
     columns,
@@ -251,34 +151,43 @@ export default function ResizableShadcnTable() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    onGlobalFilterChange: setGlobalFilter,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
+      globalFilter,
+    },
+    globalFilterFn: (row, columnId, filterValue) => {
+      const searchValue = String(filterValue).toLowerCase().trim()
+      if (!searchValue) return true
+
+      // Search through all values in the row
+      const searchableValues = Object.values(row.original).map(value =>
+        String(value || '').toLowerCase()
+      ).join(' ')
+
+      return searchableValues.includes(searchValue)
     },
     initialState: {
       pagination: {
-        pageSize: 3,
+        pageSize: 20,
       },
     },
   })
 
-  // Get visible columns for width calculations
   const visibleColumns = table.getVisibleLeafColumns()
 
-  // Initialize column widths only for new columns that don't have saved widths
-  React.useEffect(() => {
+  useEffect(() => {
     if (visibleColumns.length > 0) {
       setColWidths(prev => {
         const newWidths = { ...prev }
         let hasNewColumns = false
 
-        // Check which columns need default widths
         const columnsNeedingWidths = visibleColumns.filter(col => !newWidths[col.id])
 
         if (columnsNeedingWidths.length > 0) {
           hasNewColumns = true
-          // Calculate available width for new columns
           const usedWidth = visibleColumns
             .filter(col => newWidths[col.id])
             .reduce((sum, col) => sum + (newWidths[col.id] || 0), 0)
@@ -296,18 +205,15 @@ export default function ResizableShadcnTable() {
     }
   }, [visibleColumns.map(col => col.id).join(',')])
 
-  // Column resizing logic
   const handleMouseResize = (columnId: string, index: number) => {
-    const handleMouseDown = (e: React.MouseEvent) => {
+    const handleMouseDown = (e: MouseEvent) => {
       e.preventDefault()
       const startX = e.clientX
       const startWidths = { ...colWidths }
 
-      const handleMouseMove = (e: MouseEvent) => {
+      const handleMouseMove = (e: globalThis.MouseEvent) => {
         const diff = e.clientX - startX
-        const containerWidth = e.target
-          ? (e.target as HTMLElement).closest('table')?.offsetWidth || 800
-          : 800
+        const containerWidth = 800
         const diffPercent = (diff / containerWidth) * 100
 
         setColWidths(prev => {
@@ -340,12 +246,19 @@ export default function ResizableShadcnTable() {
   }
 
   return (
-    <div className="p-4 w-full mx-auto">
-      {/* Column visibility controls */}
-      <div className="flex items-center py-4">
+    <div className="px-4 w-full mx-auto">
+      <div className="flex items-center justify-end py-1 gap-2">
+        <Input
+          type="text"
+          placeholder="Căutare..."
+          value={globalFilter ?? ''}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
+          className="max-w-[200px]"
+        />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline" className="">
               <Columns className="mr-2 h-4 w-4" />
               Coloane
             </Button>
@@ -357,22 +270,15 @@ export default function ResizableShadcnTable() {
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
-                const columnDef = column.columnDef as ColumnDef<Person>
-                const header = typeof columnDef.header === 'function'
-                  ? column.id
-                  : columnDef.header || column.id
 
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     className="capitalize"
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    onCheckedChange={(value: boolean) => column.toggleVisibility(!!value)}
                   >
-                    {column.id === 'firstName' ? 'Prenume' :
-                      column.id === 'lastName' ? 'Nume' :
-                        column.id === 'age' ? 'Vârstă' :
-                          column.id === 'email' ? 'Email' : column.id}
+                    {column.id}
                   </DropdownMenuCheckboxItem>
                 )
               })}
@@ -380,88 +286,80 @@ export default function ResizableShadcnTable() {
         </DropdownMenu>
       </div>
 
-      <div className="bg-background rounded-lg border shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table className="w-full border-collapse text-sm">
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="bg-muted/50 border-b">
-                  {headerGroup.headers.map((header, index) => (
-                    <TableHead
-                      key={header.id}
-                      className="relative border-r last:border-r-0 text-left align-top"
+      <div className="rounded-lg border shadow-sm overflow-hidden">
+        <Table className="w-full border-collapse text-sm">
+          <TableHeader className="sticky top-0 z-100 bg-sidebar">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="capitalize bg-sidebar border-b">
+                {headerGroup.headers.map((header, index) => (
+                  <TableHead
+                    key={header.id}
+                    className="relative border-r last:border-r-0 text-left align-top py-2"
+                    style={{
+                      width: `${colWidths[header.id] || 25}%`,
+                      minWidth: '100px'
+                    }}
+                  >
+                    <div className="mx-3">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                    </div>
+                    {header.id !== 'actions' && index < headerGroup.headers.length - 1 && (
+                      <MoveHorizontal
+                        className="absolute z-10 right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-5 w-8 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
+                        onMouseDown={handleMouseResize(header.id, index)}
+                      />
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="border-b bg-background hover:bg-muted/30 transition-colors"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className="p-3 border-r last:border-r-0 overflow-hidden"
                       style={{
-                        width: `${colWidths[header.id] || 25}%`,
-                        minWidth: '100px'
+                        width: `${colWidths[cell.column.id] || 25}%`,
+                        minWidth: '100px',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}
                     >
-                      <div className="mx-3">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                      </div>
-                      {/* Column resizer - only for non-action columns and not last column */}
-                      {header.id !== 'actions' && index < headerGroup.headers.length - 1 && (
-                        <MoveHorizontal
-                          tabIndex={1}
-                          className="absolute z-10 right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-5 w-[1.8rem] bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
-                          onMouseDown={handleMouseResize(header.id, index)}
-                        />
-                      )}
-                    </TableHead>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="border-b hover:bg-muted/30 transition-colors"
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="p-3 mx-3 border-r last:border-r-0 overflow-hidden"
-                        style={{
-                          width: `${colWidths[cell.column.id] || 25}%`,
-                          minWidth: '100px',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={visibleColumns.length}
-                    className="p-8 text-center text-muted-foreground"
-                  >
-                    Nu s-au găsit rezultate.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            ) : (
+              <TableRow className='h-[60dvh]'>
+                <TableCell colSpan={visibleColumns.length} className="p-8 text-center flex flex-col items-center gap-2 text-xl">
+                  <TableCellsMerge className="h-20 w-20" />
+                  Nu s-au găsit rezultate.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
 
-        {/* Pagination */}
         <div className="flex items-center justify-between p-4 bg-muted/50 border-t">
           <Button
             className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            &lt; Anterior
+            <ChevronsLeft /> Anterior
           </Button>
           <span className="text-sm text-muted-foreground">
             Pagina{' '}
@@ -475,7 +373,7 @@ export default function ResizableShadcnTable() {
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Următorul &gt;
+            Următorul <ChevronsRight />
           </Button>
         </div>
       </div>
