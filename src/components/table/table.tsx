@@ -16,40 +16,47 @@ import {
   type HeaderContext,
   type CellContext
 } from "@tanstack/react-table"
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, MoreHorizontal, Columns, MoveHorizontal, TableCellsMerge, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, MoreHorizontal, Columns, MoveHorizontal, TableCellsMerge, ChevronsLeft, ChevronsRight, ChevronDown, ChevronRight } from 'lucide-react'
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-
 
 type Person = {
   id: number
   firstName: string
   lastName: string
   age: number
-  email: string,
+  email: string
   test?: string
+  child?: Person[]
 }
 
-// PROBLEMĂ IDENTIFICATĂ: Datele duplicate cu același ID
-// Soluția: Fiecare înregistrare trebuie să aibă un ID unic
 const defaultData: Person[] = [
-  { id: 1, firstName: 'Maria', lastName: 'Popescu', age: 29, email: 'maria@example.com', test: 'test' },
-  { id: 2, firstName: 'Andrei', lastName: 'Ionescu', age: 42, email: 'andrei@example.com' },
-  { id: 3, firstName: 'Vasile', lastName: 'Georgescu', age: 25, email: 'vasile@example.com' }, // Fixed email
-  { id: 4, firstName: 'Ion', lastName: 'Marin', age: 38, email: 'ion@example.com' },
-  { id: 5, firstName: 'Ana', lastName: 'Radu', age: 31, email: 'ana@example.com' },
-  { id: 6, firstName: 'Elena', lastName: 'Dumitru', age: 33, email: 'elena@example.com' },
-  { id: 7, firstName: 'Mihai', lastName: 'Stoica', age: 45, email: 'mihai@example.com' },
-  { id: 8, firstName: 'Alexandra', lastName: 'Popa', age: 27, email: 'alexandra@example.com' },
-  { id: 9, firstName: 'Cristian', lastName: 'Nistor', age: 36, email: 'cristian@example.com' },
-  { id: 10, firstName: 'Diana', lastName: 'Coman', age: 32, email: 'diana@example.com' },
-  { id: 11, firstName: 'Gabriel', lastName: 'Vlad', age: 40, email: 'gabriel@example.com' },
-  { id: 12, firstName: 'Ioana', lastName: 'Preda', age: 28, email: 'ioana@example.com' },
-  { id: 13, firstName: 'Radu', lastName: 'Mocanu', age: 35, email: 'radu@example.com' },
-  { id: 14, firstName: 'Simona', lastName: 'Fieraru', age: 30, email: 'simona@example.com' },
-  { id: 15, firstName: 'Bogdan', lastName: 'Tudose', age: 41, email: 'bogdan@example.com' },
+  {
+    id: 1, firstName: 'Maria', lastName: 'Popescu', age: 29, email: 'maria@example.com', child: [
+      { id: 100, firstName: 'Ionica', lastName: 'Ionescu', age: 42, email: 'ionica@example.com' },
+      { id: 101, firstName: 'Georgica', lastName: 'Ionescu', age: 42, email: 'georgica@example.com' }
+    ]
+  },
+  { id: 2, firstName: 'Andrei', lastName: 'Ionescu', age: 42, email: 'andrei@example.com', child: [] },
+  {
+    id: 3, firstName: 'Vasile', lastName: 'Georgescu', age: 25, email: 'vasile@example.com', child: [
+      { id: 300, firstName: 'Vasile Jr', lastName: 'Gieorgescu', age: 5, email: 'vasilejr@example.com' }
+    ]
+  },
+  { id: 4, firstName: 'Ion', lastName: 'Marin', age: 38, email: 'ion@example.com', child: [] },
+  { id: 5, firstName: 'Ana', lastName: 'Radu', age: 31, email: 'ana@example.com', child: [] },
+  { id: 6, firstName: 'Elena', lastName: 'Dumitru', age: 33, email: 'elena@example.com', child: [] },
+  { id: 7, firstName: 'Mihai', lastName: 'Stoica', age: 45, email: 'mihai@example.com', child: [] },
+  { id: 8, firstName: 'Alexandra', lastName: 'Popa', age: 27, email: 'alexandra@example.com', child: [] },
+  { id: 9, firstName: 'Cristian', lastName: 'Nistor', age: 36, email: 'cristian@example.com', child: [] },
+  { id: 10, firstName: 'Diana', lastName: 'Coman', age: 32, email: 'diana@example.com', child: [] },
+  { id: 11, firstName: 'Gabriel', lastName: 'Vlad', age: 40, email: 'gabriel@example.com', child: [] },
+  { id: 12, firstName: 'Ioana', lastName: 'Preda', age: 28, email: 'ioana@example.com', child: [] },
+  { id: 13, firstName: 'Radu', lastName: 'Mocanu', age: 35, email: 'radu@example.com', child: [] },
+  { id: 14, firstName: 'Simona', lastName: 'Fieraru', age: 30, email: 'simona@example.com', child: [] },
+  { id: 15, firstName: 'Bogdan', lastName: 'Tudose', age: 41, email: 'bogdan@example.com', child: [] },
 ]
 
 export default function TableComponent() {
@@ -58,6 +65,7 @@ export default function TableComponent() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [globalFilter, setGlobalFilter] = useState<string>('')
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
 
   const STORAGE_KEY = 'table-column-widths'
 
@@ -80,10 +88,50 @@ export default function TableComponent() {
       }
     }
   }, [colWidths])
+
+  const toggleRowExpansion = (rowId: number) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId)
+      } else {
+        newSet.add(rowId)
+      }
+      return newSet
+    })
+  }
+
   const generateColumns = (sampleData: Person[]): ColumnDef<Person>[] => {
     if (!sampleData.length) return []
 
-    const keys = Object.keys(sampleData[0]).filter(k => k !== "id")
+    const keys = Object.keys(sampleData[0]).filter(k => k !== "id" && k !== "child")
+
+    const expanderCol: ColumnDef<Person> = {
+      id: "expander",
+      header: () => <div className="w-fit"></div>,
+      cell: ({ row }) => {
+        const person = row.original
+        const hasChildren = person.child && person.child.length > 0
+
+        if (!hasChildren) return <div className="w-fit"></div>
+
+        return (
+          <Button
+            variant="ghost"
+            className="h-6 w-fit p-0"
+            onClick={() => toggleRowExpansion(person.id)}
+          >
+            {expandedRows.has(person.id) ? (
+              <ChevronDown className="h-4 w-fit" />
+            ) : (
+              <ChevronRight className="h-4 w-fit" />
+            )}
+          </Button>
+        )
+      },
+      enableSorting: false,
+      enableHiding: false,
+    }
 
     const dynamicCols = keys.map((key) => ({
       accessorKey: key,
@@ -91,7 +139,7 @@ export default function TableComponent() {
       header: ({ column }: HeaderContext<Person, unknown>) => (
         <div className="flex flex-col gap-2">
           <div
-            className="font-medium cursor-pointer select-none hover:bg-muted transition-colors flex items-center justify-between p-2"
+            className="font-medium cursor-pointer select-none  transition-colors flex items-center justify-between p-2"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             <span>{key}</span>
@@ -100,7 +148,7 @@ export default function TableComponent() {
             ) : column.getIsSorted() === "desc" ? (
               <ArrowDownWideNarrow />
             ) : (
-              <span style={{ opacity: 0.5 }}>↓</span>
+              <span style={{ opacity: 0.5 }}> <ArrowDownWideNarrow /></span>
             )}
           </div>
         </div>
@@ -113,7 +161,7 @@ export default function TableComponent() {
     const actionCol: ColumnDef<Person> = {
       id: "actions",
       enableHiding: false,
-      header: () => <div className="w-auto">Acțiuni</div>,
+      header: () => <div className="w-fit">Acțiuni</div>,
       cell: ({ row }) => {
         const person = row.original
         return (
@@ -136,7 +184,7 @@ export default function TableComponent() {
       }
     }
 
-    return [...dynamicCols, actionCol]
+    return [expanderCol, ...dynamicCols, actionCol]
   }
 
   const columns = useMemo<ColumnDef<Person>[]>(() => generateColumns(data), [data])
@@ -162,7 +210,6 @@ export default function TableComponent() {
       const searchValue = String(filterValue).toLowerCase().trim()
       if (!searchValue) return true
 
-      // Search through all values in the row
       const searchableValues = Object.values(row.original).map(value =>
         String(value || '').toLowerCase()
       ).join(' ')
@@ -177,6 +224,22 @@ export default function TableComponent() {
   })
 
   const visibleColumns = table.getVisibleLeafColumns()
+
+  const childTables = useMemo(() => {
+    const tables: Record<number, any> = {}
+    const childColumns = columns.filter(col => col.id !== 'expander' && col.id !== 'actions')
+
+    data.forEach(person => {
+      if (person.child && person.child.length > 0) {
+        tables[person.id] = {
+          data: person.child,
+          columns: childColumns
+        }
+      }
+    })
+
+    return tables
+  }, [data, columns])
 
   useEffect(() => {
     if (visibleColumns.length > 0) {
@@ -203,7 +266,7 @@ export default function TableComponent() {
         return hasNewColumns ? newWidths : prev
       })
     }
-  }, [visibleColumns.map(col => col.id).join(',')])
+  }, [visibleColumns.map(col => col.id).join(','), expandedRows])
 
   const handleMouseResize = (columnId: string, index: number) => {
     const handleMouseDown = (e: MouseEvent) => {
@@ -245,6 +308,97 @@ export default function TableComponent() {
     return handleMouseDown
   }
 
+  const renderChildTable = (parentId: number) => {
+    const childTableData = childTables[parentId]
+    if (!childTableData) return null
+
+    return (
+      <div className="bg-muted/50 p-4 border-t">
+        <div className="overflow-x-auto">
+          <Table className="w-full text-sm">
+            <TableHeader>
+              <TableRow className="border-b bg-sidebar w-fit">
+                {visibleColumns.map((column) => (
+                  <TableHead
+                    key={column.id}
+                    className="text-left p-2 font-medium border-r last:border-r-0"
+                    style={{ width: `${colWidths[column.id] || 25}%` }}
+                  >
+                    {column.id === 'expander' ? '' : (
+                      typeof column.columnDef.header === 'function'
+                        ? column.id
+                        : column.columnDef.header
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {childTableData.data.map((child: Person, index: number) => (
+                <TableRow
+                  key={child.id || index}
+                  className="border-b hover:bg-muted/30 transition-colors w-fit"
+                >
+                  {visibleColumns.map((column) => {
+                    // expander gol în copil
+                    if (column.id === 'expander') {
+                      return (
+                        <TableCell
+                          key={column.id}
+                          className="p-2 border-r last:border-r-0"
+                          style={{
+                            width: `${colWidths[column.id] || 25}%`
+                          }}
+                        />
+                      )
+                    }
+
+                    let cellContent: React.ReactNode = ''
+                    const accessorKey = (column.columnDef as any).accessorKey
+
+                    if (typeof column.columnDef.cell === 'function') {
+                      try {
+                        cellContent = column.columnDef.cell({
+                          row: {
+                            original: child,
+                            getValue: (key: string) => child[key as keyof Person]
+                          }
+                        } as any)
+                      } catch {
+                        cellContent = accessorKey
+                          ? String(child[accessorKey as keyof Person] || '')
+                          : ''
+                      }
+                    } else if (accessorKey && accessorKey in child) {
+                      const value = child[accessorKey as keyof Person]
+                      cellContent = value ? String(value) : ''
+                    }
+
+                    return (
+                      <TableCell
+                        key={column.id}
+                        className="p-2 border-r last:border-r-0"
+                        style={{
+                          width: `${colWidths[column.id] || 25}%`,
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {cellContent}
+                      </TableCell>
+                    )
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    )
+  }
+
+
+
   return (
     <div className="px-4 w-full mx-auto">
       <div className="flex items-center justify-end py-1 gap-2">
@@ -270,7 +424,6 @@ export default function TableComponent() {
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
-
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
@@ -295,10 +448,7 @@ export default function TableComponent() {
                   <TableHead
                     key={header.id}
                     className="relative border-r last:border-r-0 text-left align-top py-2"
-                    style={{
-                      width: `${colWidths[header.id] || 25}%`,
-                      minWidth: '100px'
-                    }}
+                    style={{ width: `${colWidths[header.id] || 25}%` }}
                   >
                     <div className="mx-3">
                       {header.isPlaceholder
@@ -308,7 +458,7 @@ export default function TableComponent() {
                           header.getContext()
                         )}
                     </div>
-                    {header.id !== 'actions' && index < headerGroup.headers.length - 1 && (
+                    {index < headerGroup.headers.length - 1 && (
                       <MoveHorizontal
                         className="absolute z-10 right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-5 w-8 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
                         onMouseDown={handleMouseResize(header.id, index)}
@@ -319,33 +469,46 @@ export default function TableComponent() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody className='relative'>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="border-b bg-background hover:bg-muted/30 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className="p-3 border-r last:border-r-0 overflow-hidden"
-                      style={{
-                        width: `${colWidths[cell.column.id] || 25}%`,
-                        minWidth: '100px',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
+              table.getRowModel().rows.map((row) => {
+                const person = row.original
+                const isExpanded = expandedRows.has(person.id)
+
+                return (
+                  <>
+                    <TableRow
+                      key={row.id}
+                      className="border-b bg-background hover:bg-muted/30 transition-colors"
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className="px-3 border-r last:border-r-0 overflow-hidden"
+                          style={{
+                            width: `${colWidths[cell.column.id] || 25}%`,
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                    {isExpanded && person.child && person.child.length > 0 && (
+                      <TableRow key={`${row.id}-expanded`}>
+                        <TableCell colSpan={visibleColumns.length} className="p-0">
+                          {renderChildTable(person.id)}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
+                )
+              })
             ) : (
-              <TableRow className='h-[60dvh]'>
-                <TableCell colSpan={visibleColumns.length} className="p-8 text-center flex flex-col items-center gap-2 text-xl">
-                  <TableCellsMerge className="h-20 w-20" />
+              <TableRow className='w-full  w-full flex flex-col items-center  h-[60vh]'>
+                <TableCell colSpan={visibleColumns.length} className="p-8 text-center w-full flex flex-col items-center gap-2 text-xl absolute left-[0%] top-[25%] -translate-50%">
+                  <TableCellsMerge className="h-20 w-full" />
                   Nu s-au găsit rezultate.
                 </TableCell>
               </TableRow>
