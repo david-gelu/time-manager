@@ -1,11 +1,11 @@
-import { useState, type AllHTMLAttributes } from "react";
-import { Calendar as PrimereactCalendar } from "primereact/calendar";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { format } from "date-fns";
-import type { Nullable } from "primereact/ts-helpers";
+import { useState, type AllHTMLAttributes } from "react"
+import { Calendar as PrimereactCalendar } from "primereact/calendar"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
+import { Button } from "./ui/button"
+import { format } from "date-fns"
+import type { Nullable } from "primereact/ts-helpers"
 
-type CalendarValue = Nullable<Date | Date[] | (Date | null)[]>;
+type CalendarValue = Nullable<Date | Date[] | (Date | null)[]>
 
 export default function Calendar({
   showTime,
@@ -13,36 +13,36 @@ export default function Calendar({
   desc,
   inline
 }: {
-  showTime?: boolean;
-  selectionMode?: "single" | "multiple" | "range";
-  desc?: string;
-  inline?: boolean;
+  showTime?: boolean
+  selectionMode?: "single" | "multiple" | "range"
+  desc?: string
+  inline?: boolean
 }) {
-  const [dates, setDates] = useState<CalendarValue>(null);
+  const [dates, setDates] = useState<CalendarValue>(null)
 
   function formatDateLabel(value: CalendarValue, mode: "single" | "multiple" | "range"): string {
-    if (!value) return "Select date";
+    if (!value) return "Select date"
 
     if (mode === "single" && value instanceof Date) {
-      return format(value, showTime ? "dd.MM.yyyy HH:mm" : "dd.MM.yyyy");
+      return format(value, showTime ? "dd.MM.yyyy HH:mm" : "dd.MM.yyyy")
     }
     if (mode === "multiple" && Array.isArray(value)) {
       return value
         .filter((d): d is Date => d !== null && d instanceof Date)
         .map((d) => format(d as string | number | Date, "dd.MM.yyyy"))
-        .join(", ");
+        .join(", ")
     }
 
     if (mode === "range" && Array.isArray(value)) {
-      const [from, to] = value;
+      const [from, to] = value
       if (from instanceof Date && to instanceof Date) {
-        return `${format(from, "dd.MM.yyyy")} - ${format(to, "dd.MM.yyyy")}`;
+        return `${format(from, "dd.MM.yyyy")} - ${format(to, "dd.MM.yyyy")}`
       } else if (from instanceof Date) {
-        return `${format(from, "dd.MM.yyyy")} - ...`;
+        return `${format(from, "dd.MM.yyyy")} - ...`
       }
     }
 
-    return "Select date";
+    return "Select date"
   }
 
   return (
@@ -108,5 +108,5 @@ export default function Calendar({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

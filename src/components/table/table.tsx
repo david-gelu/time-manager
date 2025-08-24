@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from 'react'
 import {
   flexRender,
   getCoreRowModel,
@@ -351,9 +351,9 @@ export default function TableComponent() {
 
       <div className="rounded-lg border shadow-sm overflow-hidden">
         <Table className="w-full border-collapse text-sm">
-          <TableHeader className="sticky top-0 z-100 bg-sidebar">
+          <TableHeader className="sticky top-0 z-10 bg-background">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="capitalize bg-sidebar border-b">
+              <TableRow key={headerGroup.id} className="capitalize border-b">
                 {headerGroup.headers.map((header, index) => (
                   <TableHead
                     key={header.id}
@@ -370,7 +370,7 @@ export default function TableComponent() {
                     </div>
                     {index < headerGroup.headers.length - 1 && (
                       <MoveHorizontal
-                        className="absolute z-10 right-0 translate-x-1/2 h-4 w-5 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
+                        className="absolute z-10 right-0 top-1/3 translate-x-1/2 -translate-y-1/2 h-4 w-5 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
                         onMouseDown={handleMouseResize(header.id, index)}
                       />
                     )}
@@ -386,10 +386,10 @@ export default function TableComponent() {
                 const isExpanded = expandedRows.has(person.id)
 
                 return (
-                  <React.Fragment key={row.id}>
+                  <Fragment key={row.id}>
                     <TableRow
                       key={row.id}
-                      className="border-b bg-background hover:bg-muted/30 transition-colors"
+                      className="border-b hover:bg-muted/30 transition-colors"
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell
@@ -416,7 +416,7 @@ export default function TableComponent() {
                         </TableCell>
                       </TableRow>
                     )}
-                  </React.Fragment>
+                  </Fragment>
                 )
               })
             ) : (

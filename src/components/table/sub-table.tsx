@@ -86,11 +86,11 @@ export default function SubTable({ data, columns, parentId }: SubTableProps) {
       <div className="overflow-x-auto">
         <Table className="w-full text-sm">
           <TableHeader>
-            <TableRow className="border-b bg-sidebar w-fit">
+            <TableRow className="border-b w-fit px-4">
               {childVisibleColumns.map((column: ColumnDef<Person>, index: number) => (
                 <TableHead
                   key={column.id}
-                  className="text-left capitalize p-2 font-medium border-r last:border-r-0 relative"
+                  className="text-left capitalize px-4 font-medium border-r last:border-r-0 relative"
                   style={{ width: `${widths[column.id as string] || 25}%` }}
                 >
                   {column.id === 'expander' || column.id === 'actions' ? '' : (
@@ -100,7 +100,7 @@ export default function SubTable({ data, columns, parentId }: SubTableProps) {
                   )}
                   {index < childVisibleColumns.length - 1 && (
                     <MoveHorizontal
-                      className="absolute z-10 right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-5 w-8 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
+                      className="absolute z-9 right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-5 w-8 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
                       onMouseDown={handleChildMouseResize(
                         column.id as string,
                         index,
@@ -123,7 +123,7 @@ export default function SubTable({ data, columns, parentId }: SubTableProps) {
                     return (
                       <TableCell
                         key={column.id}
-                        className="p-2 border-r last:border-r-0"
+                        className="px-4 border-r last:border-r-0"
                         style={{
                           width: `${widths[column.id as string] || 25}%`
                         }}
@@ -155,7 +155,7 @@ export default function SubTable({ data, columns, parentId }: SubTableProps) {
                   return (
                     <TableCell
                       key={column.id}
-                      className="p-2 border-r last:border-r-0"
+                      className="px-4 border-r last:border-r-0"
                       style={{
                         width: `${widths[column.id as string] || 25}%`,
                         textOverflow: 'ellipsis',
