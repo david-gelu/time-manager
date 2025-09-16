@@ -1,39 +1,53 @@
-import Calendar from "./calendar"
+import { useState } from "react"
+import Calendar, { type CalendarValue } from "./calendar"
 import { Button } from "./ui/button"
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "./ui/dialog"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { Textarea } from "./ui/textarea"
 
-function AddNewTask() {
+export default function AddNewTask() {
+  const [selectedDate, setSelectedDate] = useState<CalendarValue>(new Date())
+
   return (
     <Dialog>
       <form>
         <DialogTrigger asChild>
           <Button variant="outline">Add task</Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[70vw]">
           <DialogHeader>
-            <DialogTitle>New task</DialogTitle>
-            {/* <DialogDescription>
-              Make changes to your profile here. Click save when you're done.
-            </DialogDescription> */}
+            <DialogTitle>New Task</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4">
             <div className="grid gap-3">
               <Label htmlFor="name">Task name</Label>
-              <Input id="name" name="name" defaultValue="" placeholder="New task to do" />
+              <Input id="name" name="name" placeholder="New task to do" />
             </div>
             <div className="grid gap-3">
               <Label htmlFor="details">Details</Label>
-              <Textarea id="details" name="details" defaultValue="" placeholder="Details about what needs to be done" />
+              <Textarea id="details" name="details" placeholder="Details about the task" />
             </div>
             <div className="grid gap-3">
               <Label htmlFor="date">Date</Label>
-              <Calendar showTime selectionMode="single" />
+              <Calendar
+                showTime
+                selectionMode="single"
+                inline
+                value={selectedDate}
+                onChange={setSelectedDate}
+              />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex justify-between">
             <Button className="bg-teal-400" type="submit">Save changes</Button>
             <DialogClose asChild>
               <Button variant="outlineDestructive">Cancel</Button>
@@ -44,5 +58,3 @@ function AddNewTask() {
     </Dialog>
   )
 }
-
-export default AddNewTask
