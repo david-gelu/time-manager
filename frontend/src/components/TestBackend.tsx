@@ -1,4 +1,4 @@
-import { useBackendData } from "../hooks/queries"
+import { useBackendData } from "../lib/queries"
 
 export function TestBackend() {
   const { data, isLoading, isError, error } = useBackendData()

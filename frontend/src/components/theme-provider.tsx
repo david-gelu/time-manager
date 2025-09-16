@@ -30,14 +30,12 @@ export function ThemeProvider({
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   )
 
-  // 👇 Funcție internă pentru a obține tema sistemului
   const getSystemTheme = (): "light" | "dark" => {
     return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light"
   }
 
-  // 🔄 Actualizare clase pe <html> și injectare temă PrimeReact
   useEffect(() => {
     const root = window.document.documentElement
     root.classList.remove("light", "dark")
@@ -45,7 +43,6 @@ export function ThemeProvider({
     const currentTheme = theme === "system" ? getSystemTheme() : theme
     root.classList.add(currentTheme)
 
-    // ✅ Injectare stylesheet PrimeReact în <head>
     const id = "primereact-theme"
     const existingLink = document.getElementById(id) as HTMLLinkElement | null
 

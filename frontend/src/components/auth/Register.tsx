@@ -34,7 +34,6 @@ export function Register() {
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle()
-      // Redirect + toast handled in AuthContext
     } catch (err: any) {
       console.error("Google sign in error:", err)
       toast.error("Autentificarea cu Google a eșuat")

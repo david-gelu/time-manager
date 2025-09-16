@@ -7,7 +7,6 @@ dotenv.config();
 
 const app = express();
 
-// Updated CORS configuration with more options
 app.use(cors({
   origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -27,17 +26,13 @@ const connectDB = async () => {
   }
 };
 
-// Wait for MongoDB connection before starting server
 connectDB().then(() => {
-  // Health check endpoint
   app.get('/api/health', (req, res) => {
     res.json({ status: 'API is running' });
   });
 
-  // Test route with better error handling
   app.get('/api/test', async (req, res) => {
     try {
-      // Check if MongoDB is connected
       if (mongoose.connection.readyState !== 1) {
         throw new Error('MongoDB not connected');
       }
@@ -61,7 +56,6 @@ connectDB().then(() => {
     }
   });
 
-  // Error handling middleware
   app.use((req, res) => {
     res.status(404).json({ error: `Cannot ${req.method} ${req.url}` });
   });

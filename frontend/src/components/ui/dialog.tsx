@@ -1,28 +1,26 @@
-import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { XIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
+import { forwardRef, type ComponentProps, type ComponentPropsWithoutRef, type ElementRef } from "react"
 
-function Dialog(props: React.ComponentProps<typeof DialogPrimitive.Root>) {
+function Dialog(props: ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
-function DialogTrigger(props: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
+function DialogTrigger(props: ComponentProps<typeof DialogPrimitive.Trigger>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
 }
 
-function DialogPortal(props: React.ComponentProps<typeof DialogPrimitive.Portal>) {
+function DialogPortal(props: ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 }
 
-function DialogClose(props: React.ComponentProps<typeof DialogPrimitive.Close>) {
+function DialogClose(props: ComponentProps<typeof DialogPrimitive.Close>) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
-const DialogOverlay = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+const DialogOverlay = forwardRef<
+  ElementRef<typeof DialogPrimitive.Overlay>,
+  ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     data-slot="dialog-overlay"
@@ -36,9 +34,9 @@ const DialogOverlay = React.forwardRef<
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
-const DialogContent = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { showCloseButton?: boolean }
+const DialogContent = forwardRef<
+  ElementRef<typeof DialogPrimitive.Content>,
+  ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { showCloseButton?: boolean }
 >(({ className, children, showCloseButton = true, ...props }, ref) => (
   <DialogPortal data-slot="dialog-portal">
     <DialogOverlay />
@@ -66,13 +64,13 @@ const DialogContent = React.forwardRef<
 ))
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
-function DialogHeader(props: React.ComponentProps<"div">) {
+function DialogHeader(props: ComponentProps<"div">) {
   return (
     <div data-slot="dialog-header" className={cn("flex flex-col gap-2 text-center sm:text-left")} {...props} />
   )
 }
 
-function DialogFooter(props: React.ComponentProps<"div">) {
+function DialogFooter(props: ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-footer"
@@ -82,9 +80,9 @@ function DialogFooter(props: React.ComponentProps<"div">) {
   )
 }
 
-const DialogTitle = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+const DialogTitle = forwardRef<
+  ElementRef<typeof DialogPrimitive.Title>,
+  ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     data-slot="dialog-title"
@@ -95,9 +93,9 @@ const DialogTitle = React.forwardRef<
 ))
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
-const DialogDescription = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+const DialogDescription = forwardRef<
+  ElementRef<typeof DialogPrimitive.Description>,
+  ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     data-slot="dialog-description"

@@ -1,17 +1,16 @@
-// calendar.tsx
 import { useState } from "react";
 import { Calendar as PrimereactCalendar } from "primereact/calendar";
 import { Button } from "./ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "./ui/dialog";
 import { format } from "date-fns";
 import type { Nullable } from "primereact/ts-helpers";
-import { AllHTMLAttributes } from "react";
+import { type AllHTMLAttributes } from "react";
 
 export type CalendarValue = Nullable<Date | Date[] | (Date | null)[]>;
 
 interface CalendarProps {
-  value: CalendarValue;                  // valoarea curentă din părinte
-  onChange: (value: CalendarValue) => void; // callback când salvăm
+  value: CalendarValue;
+  onChange: (value: CalendarValue) => void;
   showTime?: boolean;
   selectionMode?: "single" | "multiple" | "range";
   desc?: string;
@@ -27,25 +26,46 @@ export default function Calendar({
   inline,
 }: CalendarProps) {
   const [open, setOpen] = useState(false);
-  const [tempValue, setTempValue] = useState<CalendarValue>(value); // pentru preview înainte de Save
+  const [tempValue, setTempValue] = useState<CalendarValue>(value);
 
-  function formatDateLabel(value: CalendarValue, mode: "single" | "multiple" | "range"): string {
-    if (!value) return "Select date";
-    if (mode === "single" && value instanceof Date) return format(value, showTime ? "dd.MM.yyyy HH:mm" : "dd.MM.yyyy");
-    if (mode === "multiple" && Array.isArray(value))
-      return value.filter((d): d is Date => d instanceof Date).map((d) => format(d, "dd.MM.yyyy")).join(", ");
-    if (mode === "range" && Array.isArray(value)) {
-      const [from, to] = value;
-      if (from instanceof Date && to instanceof Date) return `${format(from, "dd.MM.yyyy")} - ${format(to, "dd.MM.yyyy")}`;
-      else if (from instanceof Date) return `${format(from, "dd.MM.yyyy")} - ...`;
-    }
-    return "Select date";
+  const isDate = (value: unknown): value is Date => {
+    return value instanceof Date;
   }
 
+  const formatDateLabel = (
+    value: CalendarValue,
+    mode: "single" | "multiple" | "range",
+    showTime?: boolean
+  ): string => {
+    if (!value) return "Select date";
+
+    if (mode === "single") {
+      return value instanceof Date
+        ? format(value, showTime ? "dd.MM.yyyy HH:mm" : "dd.MM.yyyy")
+        : "Select date";
+    }
+
+    if (mode === "multiple" && Array.isArray(value)) {
+      const validDates = value.filter(isDate);
+      if (validDates.length === 0) return "Select date";
+      return validDates.map((d) => format((d as Date), "dd.MM.yyyy")).join(", ");
+    }
+
+    if (mode === "range" && Array.isArray(value)) {
+      const [from, to] = value;
+      if (isDate(from) && isDate(to)) {
+        return `${format(from, "dd.MM.yyyy")} - ${format(to, "dd.MM.yyyy")}`;
+      } else if (isDate(from)) {
+        return `${format(from, "dd.MM.yyyy")} - ...`;
+      }
+    }
+
+    return "Select date";
+  }
   return (
     <Dialog open={open} onOpenChange={(val) => {
       setOpen(val);
-      if (!val) setTempValue(value); // dacă închidem fără Save, resetăm tempValue
+      if (!val) setTempValue(value);
     }}>
       <DialogTrigger asChild>
         <Button variant="outline">{formatDateLabel(value, selectionMode)}</Button>
