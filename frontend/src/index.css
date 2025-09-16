@@ -247,6 +247,10 @@
   }
 } */
 
+body {
+  overflow: hidden;
+}
+
 /* Zilele din calendar - mai mici */
 .p-datepicker table td > span {
   width: 1.5rem;
