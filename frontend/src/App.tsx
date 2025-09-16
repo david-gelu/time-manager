@@ -49,6 +49,8 @@ import {
 } from "@/components/ui/collapsible"
 import { AuthProvider } from './contexts/AuthContext';
 import { NavUser } from "./components/nav-user"
+import { TestBackend } from '@/components/TestBackend';
+import AddNewTask from "./components/add-new-task"
 
 export default function App() {
   const [openItems, setOpenItems] = useState<string[]>([])
@@ -238,37 +240,7 @@ export default function App() {
                 </Breadcrumb>
               </div>
               <div className="shrink-0 ml-auto flex items-center gap-2">
-                <Dialog>
-                  <form>
-                    <DialogTrigger asChild>
-                      <Button variant="outline">Open Dialog</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Edit profile</DialogTitle>
-                        <DialogDescription>
-                          Make changes to your profile here. Click save when you're done.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4">
-                        <div className="grid gap-3">
-                          <Label htmlFor="name-1">Name</Label>
-                          <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
-                        </div>
-                        <div className="grid gap-3">
-                          <Label htmlFor="username-1">Username</Label>
-                          <Input id="username-1" name="username" defaultValue="@peduarte" />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button className="bg-teal-400" type="submit">Save changes</Button>
-                        <DialogClose asChild>
-                          <Button variant="outlineDestructive">Cancel</Button>
-                        </DialogClose>
-                      </DialogFooter>
-                    </DialogContent>
-                  </form>
-                </Dialog>
+                <AddNewTask />
                 <Calendar inline showTime selectionMode="range" />
                 <ModeToggle />
               </div>
@@ -276,6 +248,7 @@ export default function App() {
 
             <main className="flex flex-col items-center justify-center">
               <Outlet />
+              <TestBackend />
             </main>
           </SidebarInset>
         </SidebarProvider>

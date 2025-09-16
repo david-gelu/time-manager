@@ -9,9 +9,9 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/backend/src/server.ts",
-      "runtimeExecutable": "${workspaceFolder}/backend/node_modules/.bin/ts-node",
-      "outFiles": [
-        "${workspaceFolder}/backend/dist/**/*.js"
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register"
       ],
       "cwd": "${workspaceFolder}/backend",
       "env": {
@@ -19,8 +19,16 @@
         "PORT": "5000",
         "MONGODB_URI": "mongodb+srv://davidgelu90:LdTByQGLZB3V0PLE@todoappcluster.zqhvk0j.mongodb.net/time-manager?retryWrites=true&w=majority&appName=todoAppCluster"
       },
-      "console": "integratedTerminal",
-      "sourceMaps": true
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/backend/**",
+        "!**/node_modules/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/backend/dist/**/*.js"
+      ],
+      "console": "internalConsole",
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }
