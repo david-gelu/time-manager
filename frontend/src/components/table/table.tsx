@@ -6,9 +6,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-
-import {
   type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
@@ -16,57 +13,68 @@ import {
   type HeaderContext,
   type CellContext
 } from "@tanstack/react-table"
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, MoreHorizontal, Columns, MoveHorizontal, TableCellsMerge, ChevronsLeft, ChevronsRight, ChevronDown, ChevronRight } from 'lucide-react'
+import {
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  MoreHorizontal,
+  Columns,
+  MoveHorizontal,
+  TableCellsMerge,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronDown,
+  ChevronRight
+} from 'lucide-react'
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import SubTable from './sub-table'
+import { Status, type DailyTasks, type Task } from '@/types'
 
-type Person = {
-  id: number
-  firstName: string
-  lastName: string
-  age: number
-  email: string
-  test?: string
-  child?: Person[]
-}
-
-const defaultData: Person[] = [
+// ----- DEFAULT DATA -----
+const defaultData: DailyTasks[] = [
   {
-    id: 1, firstName: 'Maria', lastName: 'Popescu', age: 29, email: 'maria@example.com', child: [
-      { id: 100, firstName: 'Ionica', lastName: 'Ionescu', age: 42, email: 'ionica@example.com' },
-      { id: 101, firstName: 'Georgica', lastName: 'Ionescu', age: 42, email: 'georgica@example.com' }
-    ]
+    id: '1',
+    name: "Plan zilnic Maria",
+    date: "2025-09-16",
+    status: Status.NEW,
+    description: "Sarcini zilnice",
+    tasks: [
+      {
+        id: 't1',
+        task_name: "Scrie raport",
+        status: Status.IN_PROGRESS,
+        start_date: "2025-09-16",
+        end_date: "2025-09-16",
+        description: "Raport pentru șef",
+      },
+      {
+        id: 't2',
+        task_name: "Ședință",
+        status: Status.COMPLETED,
+        start_date: "2025-09-16",
+        end_date: "2025-09-16",
+        description: "Discutat proiect",
+      },
+    ],
   },
-  { id: 2, firstName: 'Andrei', lastName: 'Ionescu', age: 42, email: 'andrei@example.com', child: [] },
   {
-    id: 3, firstName: 'Vasile', lastName: 'Georgescu', age: 25, email: 'vasile@example.com', child: [
-      { id: 300, firstName: 'Vasile Jr', lastName: 'Gieorgescu', age: 5, email: 'vasilejr@example.com' }
-    ]
+    id: '2',
+    name: "Plan zilnic Andrei",
+    date: "2025-09-16",
+    status: Status.IN_PROGRESS,
+    description: "Lucru pe proiect",
+    tasks: [],
   },
-  { id: 4, firstName: 'Ion', lastName: 'Marin', age: 38, email: 'ion@example.com', child: [] },
-  { id: 5, firstName: 'Ana', lastName: 'Radu', age: 31, email: 'ana@example.com', child: [] },
-  { id: 6, firstName: 'Elena', lastName: 'Dumitru', age: 33, email: 'elena@example.com', child: [] },
-  { id: 7, firstName: 'Mihai', lastName: 'Stoica', age: 45, email: 'mihai@example.com', child: [] },
-  { id: 8, firstName: 'Alexandra', lastName: 'Popa', age: 27, email: 'alexandra@example.com', child: [] },
-  { id: 9, firstName: 'Cristian', lastName: 'Nistor', age: 36, email: 'cristian@example.com', child: [] },
-  { id: 10, firstName: 'Diana', lastName: 'Coman', age: 32, email: 'diana@example.com', child: [] },
-  { id: 11, firstName: 'Gabriel', lastName: 'Vlad', age: 40, email: 'gabriel@example.com', child: [] },
-  { id: 12, firstName: 'Ioana', lastName: 'Preda', age: 28, email: 'ioana@example.com', child: [] },
-  { id: 13, firstName: 'Radu', lastName: 'Mocanu', age: 35, email: 'radu@example.com', child: [] },
-  { id: 14, firstName: 'Simona', lastName: 'Fieraru', age: 30, email: 'simona@example.com', child: [] },
-  { id: 15, firstName: 'Bogdan', lastName: 'Tudose', age: 41, email: 'bogdan@example.com', child: [] },
 ]
-
 export default function TableComponent() {
-  const [data] = useState<Person[]>(() => [...defaultData])
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [data] = useState<DailyTasks[]>(() => [...defaultData])
+  const [sorting, setSorting] = useState<any[]>([])
+  const [columnFilters, setColumnFilters] = useState<any[]>([])
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
   const [globalFilter, setGlobalFilter] = useState<string>('')
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const STORAGE_KEY = 'table-column-widths'
 
   const loadSavedWidths = (): Record<string, number> => {
@@ -89,44 +97,29 @@ export default function TableComponent() {
       }
     }
   }, [colWidths])
-
-  const toggleRowExpansion = (rowId: number) => {
+  const toggleRowExpansion = (rowId: string) => {
     setExpandedRows(prev => {
       const newSet = new Set(prev)
-      if (newSet.has(rowId)) {
-        newSet.delete(rowId)
-      } else {
-        newSet.add(rowId)
-      }
+      if (newSet.has(rowId)) newSet.delete(rowId)
+      else newSet.add(rowId)
       return newSet
     })
   }
 
-  const generateColumns = (sampleData: Person[]): ColumnDef<Person>[] => {
-    if (!sampleData.length) return []
+  const generateColumns = (): ColumnDef<DailyTasks>[] => {
+    if (!data.length) return []
 
-    const keys = Object.keys(sampleData[0]).filter(k => k !== "id" && k !== "child")
+    const keys = Object.keys(data[0]).filter(k => k !== "id" && k !== "tasks")
 
-    const expanderCol: ColumnDef<Person> = {
+    const expanderCol: ColumnDef<DailyTasks> = {
       id: "expander",
       header: () => <div className="w-fit"></div>,
       cell: ({ row }) => {
-        const person = row.original
-        const hasChildren = person.child && person.child.length > 0
-
-        if (!hasChildren) return <div className="w-fit"></div>
-
+        const task = row.original
+        if (!task.tasks?.length) return <div className="w-fit"></div>
         return (
-          <Button
-            variant="ghost"
-            className="h-6 w-fit p-0"
-            onClick={() => toggleRowExpansion(person.id)}
-          >
-            {expandedRows.has(person.id) ? (
-              <ChevronDown className="h-4 w-fit" />
-            ) : (
-              <ChevronRight className="h-4 w-fit" />
-            )}
+          <Button variant="ghost" className="h-6 w-fit p-0" onClick={() => toggleRowExpansion(task.id)}>
+            {expandedRows.has(task.id) ? <ChevronDown className="h-4 w-fit" /> : <ChevronRight className="h-4 w-fit" />}
           </Button>
         )
       },
@@ -134,61 +127,36 @@ export default function TableComponent() {
       enableHiding: false,
     }
 
-    const dynamicCols = keys.map((key) => ({
+    const dynamicCols = keys.map(key => ({
       accessorKey: key,
       id: key,
-      header: ({ column }: HeaderContext<Person, unknown>) => (
-        <div className="flex flex-col gap-2">
-          <div
-            className="font-medium cursor-pointer select-none  transition-colors flex items-center justify-between p-2"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            <span>{key}</span>
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUpNarrowWide />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDownWideNarrow />
-            ) : (
-              <span style={{ opacity: 0.5 }}> <ArrowDownWideNarrow /></span>
-            )}
-          </div>
-        </div>
-      ),
-      cell: ({ row }: CellContext<Person, unknown>) => <div>{row.getValue(key)}</div>,
+      header: key,
+      cell: ({ row }: any) => <div>{row.getValue(key)}</div>,
       enableSorting: true,
       enableHiding: true,
     }))
 
-    const actionCol: ColumnDef<Person> = {
+    const actionCol: ColumnDef<DailyTasks> = {
       id: "actions",
       enableHiding: false,
       header: () => <div className="w-fit"></div>,
-      cell: ({ row }) => {
-        const person = row.original
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-6 w-6 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => navigator.clipboard?.writeText(String(person.id))}>
-                Copiază ID
-              </DropdownMenuItem>
-              <DropdownMenuItem>Vezi client</DropdownMenuItem>
-              <DropdownMenuItem>Detalii plată</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )
-      }
+      cell: ({ row }: any) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-6 w-6 p-0"><MoreHorizontal /></Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => navigator.clipboard?.writeText(String(row.original.id))}>Copiază ID</DropdownMenuItem>
+            <DropdownMenuItem>Vezi detalii</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
     }
 
     return [expanderCol, ...dynamicCols, actionCol]
   }
 
-  const columns = useMemo<ColumnDef<Person>[]>(() => generateColumns(data), [data])
+  const columns = useMemo(() => generateColumns(), [data, expandedRows])
 
   const table = useReactTable({
     data,
@@ -201,20 +169,11 @@ export default function TableComponent() {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: setGlobalFilter,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      globalFilter,
-    },
+    state: { sorting, columnFilters, columnVisibility, globalFilter },
     globalFilterFn: (row, columnId, filterValue) => {
       const searchValue = String(filterValue).toLowerCase().trim()
       if (!searchValue) return true
-
-      const searchableValues = Object.values(row.original).map(value =>
-        String(value || '').toLowerCase()
-      ).join(' ')
-
+      const searchableValues = Object.values(row.original).map(v => String(v).toLowerCase()).join(' ')
       return searchableValues.includes(searchValue)
     },
     initialState: {
@@ -225,23 +184,6 @@ export default function TableComponent() {
   })
 
   const visibleColumns = table.getVisibleLeafColumns()
-
-  const childTables = useMemo(() => {
-    const tables: Record<number, any> = {}
-    const childColumns = columns.filter(col => col.id !== 'expander')
-
-    data.forEach(person => {
-      if (person.child && person.child.length > 0) {
-        tables[person.id] = {
-          data: person.child,
-          columns: childColumns
-        }
-      }
-    })
-
-    return tables
-  }, [data, columns])
-
   useEffect(() => {
     if (visibleColumns.length > 0) {
       setColWidths(prev => {
@@ -319,32 +261,22 @@ export default function TableComponent() {
           onChange={(e: ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
           className="max-w-[200px]"
         />
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="">
-              <Columns className="mr-2 h-4 w-4" />
-              Coloane
-            </Button>
+            <Button variant="outline"><Columns className="mr-2 h-4 w-4" />Coloane</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Vizibilitate coloane</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value: boolean) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
+            {table.getAllColumns().filter(c => c.getCanHide()).map(c => (
+              <DropdownMenuCheckboxItem
+                key={c.id}
+                checked={c.getIsVisible()}
+                onCheckedChange={v => c.toggleVisibility(!!v)}
+              >
+                {c.id}
+              </DropdownMenuCheckboxItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -352,7 +284,7 @@ export default function TableComponent() {
       <div className="rounded-lg border shadow-sm overflow-hidden">
         <Table className="w-full border-collapse text-sm">
           <TableHeader className="sticky top-0 z-10 bg-background">
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id} className="capitalize border-b">
                 {headerGroup.headers.map((header, index) => (
                   <TableHead
@@ -379,80 +311,30 @@ export default function TableComponent() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className='relative'>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => {
-                const person = row.original
-                const isExpanded = expandedRows.has(person.id)
 
-                return (
-                  <Fragment key={row.id}>
-                    <TableRow
-                      key={row.id}
-                      className="border-b hover:bg-muted/30 transition-colors"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell
-                          key={cell.id}
-                          className="px-3 border-r last:border-r-0 overflow-hidden"
-                          style={{
-                            width: `${colWidths[cell.column.id] || 25}%`,
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      ))}
+          <TableBody>
+            {table.getRowModel().rows.map(row => {
+              const task = row.original
+              const isExpanded = expandedRows.has(task.id)
+              return (
+                <Fragment key={row.id}>
+                  <TableRow className="border-b hover:bg-muted/30">
+                    {row.getVisibleCells().map(cell => (
+                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    ))}
+                  </TableRow>
+                  {isExpanded && task.tasks?.length > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={visibleColumns.length} className="p-0">
+                        <SubTable data={task.tasks} parentId={task.id} />
+                      </TableCell>
                     </TableRow>
-                    {isExpanded && person.child && person.child.length > 0 && (
-                      <TableRow key={`${row.id}-expanded`}>
-                        <TableCell colSpan={visibleColumns.length} className="p-0">
-                          <SubTable
-                            data={childTables[person.id]?.data}
-                            columns={childTables[person.id]?.columns}
-                            parentId={person.id}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </Fragment>
-                )
-              })
-            ) : (
-              <TableRow className='w-full  w-full flex flex-col items-center  h-[60vh]'>
-                <TableCell colSpan={visibleColumns.length} className="p-8 text-center w-full flex flex-col items-center gap-2 text-xl absolute left-[0%] top-[25%] -translate-50%">
-                  <TableCellsMerge className="h-20 w-full" />
-                  Nu s-au găsit rezultate.
-                </TableCell>
-              </TableRow>
-            )}
+                  )}
+                </Fragment>
+              )
+            })}
           </TableBody>
         </Table>
-
-        <div className="flex items-center justify-between p-4 bg-muted/50 border-t">
-          <Button
-            className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            <ChevronsLeft /> Anterior
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Pagina{' '}
-            <strong>
-              {table.getState().pagination.pageIndex + 1} din {table.getPageCount()}
-            </strong>{' '}
-            | {table.getFilteredRowModel().rows.length} rezultate totale
-          </span>
-          <Button
-            className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Următorul <ChevronsRight />
-          </Button>
-        </div>
       </div>
     </div>
   )

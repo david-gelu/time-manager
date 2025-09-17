@@ -1,44 +1,31 @@
 import { useEffect, useState, type MouseEvent } from 'react'
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from '../ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { MoveHorizontal } from 'lucide-react'
 import { type ColumnDef } from "@tanstack/react-table"
-
-type Person = {
-  id: number
-  [key: string]: any
+interface SubTableProps<T extends Record<string, any>> {
+  data: T[]
+  parentId: string
 }
 
-interface SubTableProps {
-  data: Person[]
-  columns: ColumnDef<Person>[]
-  parentId: number
-}
-
-export default function SubTable({ data, columns, parentId }: SubTableProps) {
+export default function SubTable<T extends Record<string, any>>({ data, parentId }: SubTableProps<T>) {
   const SUB_TABLE_STORAGE_KEY = 'sub-table-column-widths'
-
-  const loadSavedChildWidths = (): Record<number, Record<string, number>> => {
+  const [childColWidths, setChildColWidths] = useState<Record<string, Record<string, number>>>(() => {
     try {
       const saved = localStorage.getItem(SUB_TABLE_STORAGE_KEY)
       return saved ? JSON.parse(saved) : {}
-    } catch (error) {
-      console.warn('Failed to load sub-table column widths from localStorage:', error)
+    } catch {
       return {}
     }
-  }
-  const [childColWidths, setChildColWidths] = useState<Record<number, Record<string, number>>>(() => loadSavedChildWidths())
+  })
 
   useEffect(() => {
-    try {
-      localStorage.setItem(SUB_TABLE_STORAGE_KEY, JSON.stringify(childColWidths))
-    } catch (error) {
-      console.warn('Failed to save sub-table column widths to localStorage:', error)
-    }
+    try { localStorage.setItem(SUB_TABLE_STORAGE_KEY, JSON.stringify(childColWidths)) } catch { }
   }, [childColWidths])
 
-  const handleChildMouseResize = (columnId: string, index: number, visibleCols: ColumnDef<Person>[]) => {
+  // Generare coloane dinamice pe baza primei intrări
+  const childColumns: (keyof T)[] = data.length > 0 ? Object.keys(data[0]).filter(k => k !== '_id') as (keyof T)[] : []
+
+  const handleChildMouseResize = (columnId: string, index: number) => {
     return (e: MouseEvent) => {
       e.preventDefault()
       const startX = e.clientX
@@ -55,12 +42,11 @@ export default function SubTable({ data, columns, parentId }: SubTableProps) {
           const currentWidth = startWidths[columnId] || 25
           const newCurrentWidth = Math.max(5, currentWidth + diffPercent)
 
-          if (index < visibleCols.length - 1) {
-            const nextColumn = visibleCols[index + 1]
-            const nextWidth = startWidths[nextColumn.id as string] || 25
-            const newNextWidth = Math.max(5, nextWidth - diffPercent)
+          if (index < childColumns.length - 1) {
+            const nextColumn = childColumns[index]
+            const nextWidth = startWidths[nextColumn as string] || 25
             newWidths[columnId] = newCurrentWidth
-            newWidths[nextColumn.id as string] = newNextWidth
+            newWidths[nextColumn as string] = Math.max(5, nextWidth - diffPercent)
           } else {
             newWidths[columnId] = newCurrentWidth
           }
@@ -78,7 +64,6 @@ export default function SubTable({ data, columns, parentId }: SubTableProps) {
     }
   }
 
-  const childVisibleColumns = columns
   const widths = childColWidths[parentId] || {}
 
   return (
@@ -86,26 +71,18 @@ export default function SubTable({ data, columns, parentId }: SubTableProps) {
       <div className="overflow-x-auto">
         <Table className="w-full text-sm">
           <TableHeader>
-            <TableRow className="border-b w-fit px-4">
-              {childVisibleColumns.map((column: ColumnDef<Person>, index: number) => (
+            <TableRow className="border-b">
+              {childColumns.map((col, idx) => (
                 <TableHead
-                  key={column.id}
+                  key={String(col)}
                   className="text-left capitalize px-4 font-medium border-r last:border-r-0 relative"
-                  style={{ width: `${widths[column.id as string] || 25}%` }}
+                  style={{ width: `${widths[String(col)] || 25}%` }}
                 >
-                  {column.id === 'expander' || column.id === 'actions' ? '' : (
-                    typeof column.header === 'function'
-                      ? column.id
-                      : column.header
-                  )}
-                  {index < childVisibleColumns.length - 1 && (
+                  {String(col)}
+                  {idx < childColumns.length - 1 && (
                     <MoveHorizontal
-                      className="absolute z-9 right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-5 w-8 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
-                      onMouseDown={handleChildMouseResize(
-                        column.id as string,
-                        index,
-                        childVisibleColumns as ColumnDef<Person>[]
-                      )}
+                      className="absolute z-10 right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-5 w-8 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
+                      onMouseDown={handleChildMouseResize(String(col), idx)}
                     />
                   )}
                 </TableHead>
@@ -113,59 +90,17 @@ export default function SubTable({ data, columns, parentId }: SubTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((child: Person, index: number) => (
-              <TableRow
-                key={child.id || index}
-                className="border-b hover:bg-muted/30 transition-colors w-fit"
-              >
-                {childVisibleColumns.map((column: ColumnDef<Person>) => {
-                  if (column.id === 'expander') {
-                    return (
-                      <TableCell
-                        key={column.id}
-                        className="px-4 border-r last:border-r-0"
-                        style={{
-                          width: `${widths[column.id as string] || 25}%`
-                        }}
-                      />
-                    )
-                  }
-
-                  let cellContent: React.ReactNode = ''
-                  const accessorKey = (column as any).accessorKey
-
-                  if (typeof column.cell === 'function') {
-                    try {
-                      cellContent = column.cell({
-                        row: {
-                          original: child,
-                          getValue: (key: string) => child[key as keyof Person]
-                        }
-                      } as any)
-                    } catch {
-                      cellContent = accessorKey
-                        ? String(child[accessorKey as keyof Person] || '')
-                        : ''
-                    }
-                  } else if (accessorKey && accessorKey in child) {
-                    const value = child[accessorKey as keyof Person]
-                    cellContent = value ? String(value) : ''
-                  }
-
-                  return (
-                    <TableCell
-                      key={column.id}
-                      className="px-4 border-r last:border-r-0"
-                      style={{
-                        width: `${widths[column.id as string] || 25}%`,
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {cellContent}
-                    </TableCell>
-                  )
-                })}
+            {data.map((row, rowIndex) => (
+              <TableRow key={(row as any)._id || rowIndex} className="border-b hover:bg-muted/30">
+                {childColumns.map(col => (
+                  <TableCell
+                    key={String(col)}
+                    className="px-4 border-r last:border-r-0"
+                    style={{ width: `${widths[String(col)] || 25}%`, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  >
+                    {row[col]}
+                  </TableCell>
+                ))}
               </TableRow>
             ))}
           </TableBody>

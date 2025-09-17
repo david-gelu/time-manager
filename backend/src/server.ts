@@ -2,13 +2,26 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import dailyTasksRouter from "./routes/dailyTasks";
+
 
 dotenv.config();
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL_PROD
+];
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -18,7 +31,7 @@ app.use(express.json());
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/time-manager');
+    await mongoose.connect(process.env.MONGODB_URI || '');
     console.log('Connected to MongoDB');
   } catch (error) {
     console.error('MongoDB connection error:', error);
@@ -31,30 +44,7 @@ connectDB().then(() => {
     res.json({ status: 'API is running' });
   });
 
-  app.get('/api/test', async (req, res) => {
-    try {
-      if (mongoose.connection.readyState !== 1) {
-        throw new Error('MongoDB not connected');
-      }
-
-      const stats = await mongoose.connection.db.stats();
-      res.json({
-        message: 'Backend is connected',
-        mongoStatus: 'Connected',
-        databaseStats: {
-          collections: stats.collections,
-          documents: stats.objects,
-          dataSize: stats.dataSize
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching MongoDB stats:', error);
-      res.status(500).json({
-        error: 'Failed to fetch MongoDB stats',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
+  app.use("/api/daily-tasks", dailyTasksRouter)
 
   app.use((req, res) => {
     res.status(404).json({ error: `Cannot ${req.method} ${req.url}` });

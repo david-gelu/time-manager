@@ -9,8 +9,8 @@ import { type AllHTMLAttributes } from "react";
 export type CalendarValue = Nullable<Date | Date[] | (Date | null)[]>;
 
 interface CalendarProps {
-  value: CalendarValue;
-  onChange: (value: CalendarValue) => void;
+  value?: CalendarValue;
+  onChange?: (value: CalendarValue) => void;
   showTime?: boolean;
   selectionMode?: "single" | "multiple" | "range";
   desc?: string;
@@ -105,7 +105,7 @@ export default function Calendar({
           <Button
             className="bg-teal-400"
             onClick={() => {
-              onChange(tempValue);
+              onChange && onChange(tempValue);
               setOpen(false);
             }}
           >

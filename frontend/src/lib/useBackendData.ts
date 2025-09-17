@@ -1,19 +1,14 @@
 
 
-interface DatabaseStats {
-  collections: number
-  documents: number
-  dataSize: number
-}
 
 interface BackendResponse {
   message: string
   mongoStatus: string
-  databaseStats: DatabaseStats
+  collectionsCount: number
 }
 
 const fetchBackendData = async (): Promise<BackendResponse> => {
-  const response = await fetch('/api/test')
+  const response = await fetch('/api/daily-tasks/stats')
   if (!response.ok) {
     throw new Error('Network response was not ok')
   }

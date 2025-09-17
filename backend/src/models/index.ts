@@ -1,0 +1,1 @@
+export { DailyTasksModel } from './table-model';

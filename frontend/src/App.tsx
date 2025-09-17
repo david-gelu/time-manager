@@ -241,7 +241,7 @@ export default function App() {
               </div>
               <div className="shrink-0 ml-auto flex items-center gap-2">
                 <AddNewTask />
-                <Calendar withDialog inline showTime selectionMode="range" />
+                <Calendar inline showTime selectionMode="range" />
                 <ModeToggle />
               </div>
             </header>
