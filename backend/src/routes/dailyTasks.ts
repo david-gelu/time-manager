@@ -2,6 +2,7 @@ import { Router } from "express";
 import { DailyTasksModel } from "../models";
 import mongoose from "mongoose";
 import { authMiddleware, AuthRequest } from "../middleware/authMiddleware";
+import { format, parseISO } from "date-fns";
 
 const router = Router();
 
@@ -40,14 +41,30 @@ router.post("/add-task", authMiddleware, async (req: AuthRequest, res) => {
     if (!req.user) return res.status(401).json({ error: "Unauthorized" });
 
     const { name, date, status, description, tasks } = req.body;
+    const parsedDate = parseISO(date);
+
+    if (isNaN(parsedDate.getTime())) {
+      throw new Error("Invalid date value");
+    }
+
+    const existingTask = await DailyTasksModel.findOne({
+      name: new RegExp(`^${name} -`),
+      userId: req.user.uid,
+    })
+
+    if (existingTask) {
+      return res.status(400).json({ error: "Task with this name already" });
+    }
+
+    const formattedName = format(parsedDate, 'dd-MM-yy');
 
     const newTask = await DailyTasksModel.create({
-      name,
+      name: `${name} - ${formattedName}`,
       date,
-      status,
+      status: status,
       description,
       userId: req.user.uid,
-      tasks,
+      tasks: tasks || [],
     });
 
     res.status(201).json(newTask);
@@ -56,6 +73,7 @@ router.post("/add-task", authMiddleware, async (req: AuthRequest, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 
 

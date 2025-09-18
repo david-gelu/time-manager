@@ -5,6 +5,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { format } from "date-fns";
 import type { Nullable } from "primereact/ts-helpers";
 import { type AllHTMLAttributes } from "react";
+import { normalizeCalendarValue } from "@/lib/utils";
 
 export type CalendarValue = Nullable<Date | Date[] | (Date | null)[]>;
 
@@ -105,7 +106,7 @@ export default function Calendar({
           <Button
             className="bg-teal-400"
             onClick={() => {
-              onChange && onChange(tempValue);
+              onChange && onChange(normalizeCalendarValue(tempValue));
               setOpen(false);
             }}
           >

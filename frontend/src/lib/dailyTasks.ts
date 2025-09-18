@@ -4,7 +4,6 @@ import type { DailyTasks } from "@/types";
 export async function createDailyTask(taskData: DailyTasks) {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error("No user logged in");
-
   const res = await fetch("/api/daily-tasks/add-task", {
     method: "POST",
     headers: {

@@ -27,58 +27,8 @@ import SubTable from './sub-table'
 import { Status, type DailyTasks, type Task } from '@/types'
 import { Progress } from '../ui/progress'
 import { useAllDailyTasks } from '@/lib/queries'
+import { format } from 'date-fns'
 
-
-const defaultData: DailyTasks[] = [
-  {
-    id: '1',
-    name: "Plan zilnic Maria",
-    date: "2025-09-16",
-    status: Status.NEW,
-    description: "Sarcini zilnice",
-    tasks: [
-      {
-        id: 't1',
-        task_name: "Scrie raport",
-        status: Status.IN_PROGRESS,
-        start_date: "2025-09-16",
-        end_date: "2025-09-16",
-        description: "Raport pentru șef",
-      },
-      {
-        id: 't2',
-        task_name: "Ședință",
-        status: Status.COMPLETED,
-        start_date: "2025-09-16",
-        end_date: "2025-09-16",
-        description: "Discutat proiect",
-      },
-      {
-        id: 't3',
-        task_name: "Ședință",
-        status: Status.NEW,
-        start_date: "2025-09-16",
-        end_date: "2025-09-16",
-        description: "Discutat proiect",
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: "Plan zilnic Andrei",
-    date: "2025-09-16",
-    status: Status.IN_PROGRESS,
-    description: "Lucru pe proiect",
-    tasks: [{
-      id: 't1',
-      task_name: "Ședință",
-      status: Status.NEW,
-      start_date: "2025-09-16",
-      end_date: "2025-09-16",
-      description: "Discutat proiect",
-    },],
-  },
-]
 export default function TableComponent() {
   const { data = [], isLoading, isError, error } = useAllDailyTasks()
   const [sorting, setSorting] = useState<any[]>([])
@@ -121,7 +71,7 @@ export default function TableComponent() {
   const generateColumns = (): ColumnDef<DailyTasks>[] => {
     if (isLoading && !data || !data.length) return []
 
-    const keys = data.length ? Object.keys(data[0])?.filter(k => k !== "id" && k !== "tasks") : []
+    const keys = data.length ? Object.keys(data[0])?.filter(k => k !== "__v" && k !== "_id" && k !== "tasks" && k !== "userId") : []
 
     const expanderCol: ColumnDef<DailyTasks> = {
       id: "expander",
@@ -143,10 +93,23 @@ export default function TableComponent() {
       accessorKey: key,
       id: key,
       header: key,
-      cell: ({ row }: any) => <div>{row.getValue(key)}</div>,
+      cell: ({ row }: any) => {
+        const value = row.getValue(key);
+
+        if (key === 'date' && value) {
+          const date = new Date(value);
+          if (!isNaN(date.getTime())) {
+            return <div>{format(date, 'dd-MM-yyyy HH:mm')}</div>;
+          } else {
+            return <div>Invalid date</div>;
+          }
+        }
+
+        return <div>{value}</div>;
+      },
       enableSorting: true,
       enableHiding: true,
-    }))
+    }));
 
     const actionCol: ColumnDef<DailyTasks> = {
       id: "actions",
