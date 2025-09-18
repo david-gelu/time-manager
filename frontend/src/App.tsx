@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ModeToggle } from "./components/mode-toggle"
 import { Separator } from "@/components/ui/separator"
@@ -26,20 +25,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "./components/ui/breadcrumb"
-import { Input } from "./components/ui/input"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "./components/ui/label"
-import Calendar from "./components/calendar"
-import { Home, Inbox, ChevronRight, FileText, Settings, Users } from "lucide-react"
+
+import Calendar, { type CalendarValue } from "./components/calendar"
+import { Home, Inbox, ChevronRight, FileText, Settings } from "lucide-react"
 import { Outlet, Link, useLocation } from "react-router"
 import { useState } from "react"
 import {
@@ -54,7 +42,7 @@ import AddNewTask from "./components/add-new-task"
 
 export default function App() {
   const [openItems, setOpenItems] = useState<string[]>([])
-
+  const [selectedDate, setSelectedDate] = useState<CalendarValue>(new Date())
 
   const menuItems = [
     {
@@ -164,7 +152,7 @@ export default function App() {
                             <div className="w-full">
                               <CollapsibleTrigger asChild>
                                 <SidebarMenuButton
-                                  className="w-full"
+                                  className={`w-full ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'} `}
                                 >
                                   <Link
                                     to={item.url}
@@ -178,7 +166,7 @@ export default function App() {
                               </CollapsibleTrigger>
                             </div>
                           ) : (
-                            <SidebarMenuButton asChild>
+                            <SidebarMenuButton asChild className={`w-full ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'} `}>
                               <Link to={item.url}>
                                 <item.icon />
                                 <span>{item.title}</span>
@@ -191,7 +179,7 @@ export default function App() {
                               <SidebarMenuSub>
                                 {item.children.map((child) => (
                                   <SidebarMenuSubItem key={child.title}>
-                                    <SidebarMenuSubButton asChild>
+                                    <SidebarMenuSubButton asChild >
                                       <Link to={child.url}>
                                         <child.icon className="h-4 w-4" />
                                         <span>{child.title}</span>
@@ -241,7 +229,7 @@ export default function App() {
               </div>
               <div className="shrink-0 ml-auto flex items-center gap-2">
                 <AddNewTask />
-                <Calendar inline showTime selectionMode="range" />
+                <Calendar inline showTime selectionMode="range" value={selectedDate} onChange={setSelectedDate} />
                 <ModeToggle />
               </div>
             </header>

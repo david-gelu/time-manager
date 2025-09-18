@@ -13,6 +13,7 @@ export interface DailyTasks {
   date: string,
   status: Status
   description: string,
+  userId: string,
   tasks: {
     _id: Types.ObjectId
     task_name: string,
@@ -28,8 +29,10 @@ const DailyTasksSchema = new Schema<DailyTasks, DailyTasksModel>({
   date: { type: String, required: true },
   status: { type: String, enum: Object.values(Status), default: Status.NEW },
   description: { type: String, required: true, default: 'This are my tasks for today' },
+  userId: { type: String, required: true },
   tasks: {
     type: [new Schema({
+      _id: { type: Types.ObjectId, required: true },
       task_name: { type: String, required: true },
       status: { type: String, enum: Object.values(Status), default: Status.NEW },
       start_date: { type: String, required: true },

@@ -21,7 +21,7 @@ function TableHeader({ className, ...props }: ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      className={cn("[&_tr]:border-b font-extrablack", className)}
       {...props}
     />
   )

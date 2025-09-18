@@ -1,5 +1,4 @@
-
-
+import { auth } from "@/lib/firebase";
 
 interface BackendResponse {
   message: string
@@ -8,7 +7,14 @@ interface BackendResponse {
 }
 
 const fetchBackendData = async (): Promise<BackendResponse> => {
-  const response = await fetch('/api/daily-tasks/stats')
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error("No user logged in");
+  const response = await fetch('/api/daily-tasks/stats', {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
   if (!response.ok) {
     throw new Error('Network response was not ok')
   }

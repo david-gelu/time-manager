@@ -1,7 +1,6 @@
 import { useEffect, useState, type MouseEvent } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { MoveHorizontal } from 'lucide-react'
-import { type ColumnDef } from "@tanstack/react-table"
 interface SubTableProps<T extends Record<string, any>> {
   data: T[]
   parentId: string
@@ -22,8 +21,7 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
     try { localStorage.setItem(SUB_TABLE_STORAGE_KEY, JSON.stringify(childColWidths)) } catch { }
   }, [childColWidths])
 
-  // Generare coloane dinamice pe baza primei intrări
-  const childColumns: (keyof T)[] = data.length > 0 ? Object.keys(data[0]).filter(k => k !== '_id') as (keyof T)[] : []
+  const childColumns: (keyof T)[] = data.length > 0 ? Object.keys(data[0]).filter(k => k !== 'id') as (keyof T)[] : []
 
   const handleChildMouseResize = (columnId: string, index: number) => {
     return (e: MouseEvent) => {
@@ -68,10 +66,10 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
 
   return (
     <div className="bg-muted/50 p-4 border-t">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-auto">
         <Table className="w-full text-sm">
-          <TableHeader>
-            <TableRow className="border-b">
+          <TableHeader className='border-b'>
+            <TableRow >
               {childColumns.map((col, idx) => (
                 <TableHead
                   key={String(col)}
@@ -81,7 +79,7 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
                   {String(col)}
                   {idx < childColumns.length - 1 && (
                     <MoveHorizontal
-                      className="absolute z-10 right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-5 w-8 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
+                      className="absolute z-10 right-0 top-1 translate-x-1/2 -translate-y-1/2 h-3 w-4 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
                       onMouseDown={handleChildMouseResize(String(col), idx)}
                     />
                   )}

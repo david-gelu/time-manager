@@ -21,7 +21,8 @@ export interface DailyTasks {
   date: string,
   status: Status
   description: string,
-  tasks: Task[]
+  tasks: Task[],
+  userId?: string
 }
 
 export type DailyTasksRow = DailyTasks & { id: string }

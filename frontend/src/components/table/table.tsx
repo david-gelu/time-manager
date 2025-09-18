@@ -7,15 +7,9 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
-  type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
-  type HeaderContext,
-  type CellContext
 } from "@tanstack/react-table"
 import {
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
+
   MoreHorizontal,
   Columns,
   MoveHorizontal,
@@ -31,8 +25,10 @@ import { Input } from '../ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import SubTable from './sub-table'
 import { Status, type DailyTasks, type Task } from '@/types'
+import { Progress } from '../ui/progress'
+import { useAllDailyTasks } from '@/lib/queries'
 
-// ----- DEFAULT DATA -----
+
 const defaultData: DailyTasks[] = [
   {
     id: '1',
@@ -57,6 +53,14 @@ const defaultData: DailyTasks[] = [
         end_date: "2025-09-16",
         description: "Discutat proiect",
       },
+      {
+        id: 't3',
+        task_name: "Ședință",
+        status: Status.NEW,
+        start_date: "2025-09-16",
+        end_date: "2025-09-16",
+        description: "Discutat proiect",
+      },
     ],
   },
   {
@@ -65,17 +69,25 @@ const defaultData: DailyTasks[] = [
     date: "2025-09-16",
     status: Status.IN_PROGRESS,
     description: "Lucru pe proiect",
-    tasks: [],
+    tasks: [{
+      id: 't1',
+      task_name: "Ședință",
+      status: Status.NEW,
+      start_date: "2025-09-16",
+      end_date: "2025-09-16",
+      description: "Discutat proiect",
+    },],
   },
 ]
 export default function TableComponent() {
-  const [data] = useState<DailyTasks[]>(() => [...defaultData])
+  const { data = [], isLoading, isError, error } = useAllDailyTasks()
   const [sorting, setSorting] = useState<any[]>([])
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
   const [globalFilter, setGlobalFilter] = useState<string>('')
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const STORAGE_KEY = 'table-column-widths'
+
 
   const loadSavedWidths = (): Record<string, number> => {
     try {
@@ -107,9 +119,9 @@ export default function TableComponent() {
   }
 
   const generateColumns = (): ColumnDef<DailyTasks>[] => {
-    if (!data.length) return []
+    if (isLoading && !data || !data.length) return []
 
-    const keys = Object.keys(data[0]).filter(k => k !== "id" && k !== "tasks")
+    const keys = data.length ? Object.keys(data[0])?.filter(k => k !== "id" && k !== "tasks") : []
 
     const expanderCol: ColumnDef<DailyTasks> = {
       id: "expander",
@@ -153,13 +165,37 @@ export default function TableComponent() {
       )
     }
 
-    return [expanderCol, ...dynamicCols, actionCol]
+    const progressCol: ColumnDef<DailyTasks> = {
+      id: "progress",
+      enableHiding: false,
+      header: () => <div className="w-fit">Progress</div>,
+      cell: ({ row }: any) => {
+        const tasks = row.original.tasks
+        const total = tasks.length
+        const doneOrInProgress = tasks.filter(
+          (t: Task) => t.status === Status.IN_PROGRESS || t.status === Status.COMPLETED
+        ).length
+
+        const tasksProgress = total ? (doneOrInProgress / total) * 100 : 0
+
+        return (
+          <div className="flex flex-col gap-1">
+            <Progress value={tasksProgress} />
+            <span className="text-xs text-muted-foreground">
+              {doneOrInProgress} din {total} sarcini
+            </span>
+          </div>
+        )
+      }
+    }
+
+    return [expanderCol, ...dynamicCols, progressCol, actionCol]
   }
 
   const columns = useMemo(() => generateColumns(), [data, expandedRows])
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -282,7 +318,7 @@ export default function TableComponent() {
       </div>
 
       <div className="rounded-lg border shadow-sm overflow-hidden">
-        <Table className="w-full border-collapse text-sm">
+        <Table className="w-full border-collapse text-sm h-full">
           <TableHeader className="sticky top-0 z-10 bg-background">
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id} className="capitalize border-b">
@@ -313,28 +349,61 @@ export default function TableComponent() {
           </TableHeader>
 
           <TableBody>
-            {table.getRowModel().rows.map(row => {
-              const task = row.original
-              const isExpanded = expandedRows.has(task.id)
-              return (
-                <Fragment key={row.id}>
-                  <TableRow className="border-b hover:bg-muted/30">
-                    {row.getVisibleCells().map(cell => (
-                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                    ))}
-                  </TableRow>
-                  {isExpanded && task.tasks?.length > 0 && (
-                    <TableRow>
-                      <TableCell colSpan={visibleColumns.length} className="p-0">
-                        <SubTable data={task.tasks} parentId={task.id} />
-                      </TableCell>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => {
+                const task = row.original
+                const isExpanded = expandedRows.has(task.id)
+                return (
+                  <Fragment key={row.id}>
+                    <TableRow className="border-b hover:bg-muted/30">
+                      {row.getVisibleCells().map(cell => (
+                        <TableCell className="py-0 border-r last:border-r-0" key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                      ))}
                     </TableRow>
-                  )}
-                </Fragment>
-              )
-            })}
+                    {isExpanded && task.tasks?.length > 0 && (
+                      <TableRow>
+                        <TableCell colSpan={visibleColumns.length} className="py-0 border-r last:border-r-0">
+                          <SubTable data={task.tasks} parentId={task.id} />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                )
+              })
+            ) : (
+              <TableRow className='w-full  w-full flex flex-col items-center  h-[60vh]'>
+                <TableCell colSpan={visibleColumns.length} className="p-8 text-center w-full flex flex-col items-center gap-2 text-xl absolute left-[0%] top-[25%] -translate-50%">
+                  <TableCellsMerge className="h-20 w-full" />
+                  Nu s-au găsit rezultate.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
+
+        <div className="flex items-center mt-auto justify-between p-4 bg-muted/50 border-t">
+          <Button
+            className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <ChevronsLeft /> Anterior
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Pagina{' '}
+            <strong>
+              {table.getState().pagination.pageIndex + 1} din {table.getPageCount()}
+            </strong>{' '}
+            | {table.getFilteredRowModel().rows.length} rezultate totale
+          </span>
+          <Button
+            className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Următorul <ChevronsRight />
+          </Button>
+        </div>
       </div>
     </div>
   )

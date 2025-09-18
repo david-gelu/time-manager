@@ -217,7 +217,7 @@ export function UserDashboard() {
           desc: 'Conectat acum'
         }].map((stat, index) => (
           <Card key={index}>
-            <CardContent className="p-6">
+            <CardContent className="p-2">
               <div className="text-2xl font-bold">{stat.value}</div>
               <p className="text-sm font-medium text-muted-foreground">
                 {stat.title}

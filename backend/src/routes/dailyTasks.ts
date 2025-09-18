@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { DailyTasksModel } from "../models";
 import mongoose from "mongoose";
+import { authMiddleware, AuthRequest } from "../middleware/authMiddleware";
 
 const router = Router();
 
@@ -18,14 +19,45 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", async (req: AuthRequest, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
-    const tasks = await DailyTasksModel.find();
-    res.json(tasks);
+    const tasks = await DailyTasksModel.find({ userId: req.user.uid });
+    return res.json(tasks || []);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch DailyTasks" });
+    const userName = req.user?.name || req.user?.email || "Unknown";
+    return res.status(500).json({
+      error: `Failed to fetch DailyTasks for user: ${userName}, ${error}`,
+    });
+  }
+})
+
+router.post("/add-task", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+
+    const { name, date, status, description, tasks } = req.body;
+
+    const newTask = await DailyTasksModel.create({
+      name,
+      date,
+      status,
+      description,
+      userId: req.user.uid,
+      tasks,
+    });
+
+    res.status(201).json(newTask);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
+
+
 
 router.get('/stats', async (req, res) => {
   try {

@@ -48,15 +48,15 @@ export default function Calendar({
     if (mode === "multiple" && Array.isArray(value)) {
       const validDates = value.filter(isDate);
       if (validDates.length === 0) return "Select date";
-      return validDates.map((d) => format((d as Date), "dd.MM.yyyy")).join(", ");
+      return validDates.map((d) => format((d as Date), "dd.MM.yyyy HH:mm")).join(", ");
     }
 
     if (mode === "range" && Array.isArray(value)) {
       const [from, to] = value;
       if (isDate(from) && isDate(to)) {
-        return `${format(from, "dd.MM.yyyy")} - ${format(to, "dd.MM.yyyy")}`;
+        return `${format(from, "dd.MM.yyyy HH:mm")} - ${format(to, "dd.MM.yyyy HH:mm")}`;
       } else if (isDate(from)) {
-        return `${format(from, "dd.MM.yyyy")} - ...`;
+        return `${format(from, "dd.MM.yyyy HH:mm")} - ...`;
       }
     }
 

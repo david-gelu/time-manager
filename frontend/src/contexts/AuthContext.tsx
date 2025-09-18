@@ -23,6 +23,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   updateUserEmail: (newEmail: string) => Promise<void>
   updateUserPassword: (newPassword: string) => Promise<void>
+  getIdToken: () => Promise<string | null>
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType)
@@ -47,7 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false)
       }
     }
-
     handleRedirectResult()
   }, [])
 
@@ -61,7 +61,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('user')
       }
     })
-
     return () => unsubscribe()
   }, [])
 
@@ -112,6 +111,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const getIdToken = async (): Promise<string | null> => {
+    if (!auth.currentUser) return null
+    return auth.currentUser.getIdToken()
+  }
+
   const value: AuthContextType = {
     user,
     loading,
@@ -120,7 +124,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     logout,
     updateUserEmail,
-    updateUserPassword
+    updateUserPassword,
+    getIdToken,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

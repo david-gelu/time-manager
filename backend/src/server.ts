@@ -1,11 +1,18 @@
+import admin from 'firebase-admin';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import dailyTasksRouter from "./routes/dailyTasks";
+import { authMiddleware, AuthRequest } from "./middleware/authMiddleware"
 
+dotenv.config()
 
-dotenv.config();
+admin.initializeApp({
+  credential: admin.credential.cert(
+    JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string)
+  ),
+})
 
 const app = express();
 
@@ -44,7 +51,14 @@ connectDB().then(() => {
     res.json({ status: 'API is running' });
   });
 
-  app.use("/api/daily-tasks", dailyTasksRouter)
+  app.get("/api/protected", authMiddleware, (req: AuthRequest, res) => {
+    res.json({
+      message: "Access granted",
+      user: req.user,
+    })
+  })
+
+  app.use("/api/daily-tasks", authMiddleware, dailyTasksRouter)
 
   app.use((req, res) => {
     res.status(404).json({ error: `Cannot ${req.method} ${req.url}` });
