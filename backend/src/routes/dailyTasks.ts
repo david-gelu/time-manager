@@ -50,6 +50,7 @@ router.post("/add-task", authMiddleware, async (req: AuthRequest, res) => {
     const existingTask = await DailyTasksModel.findOne({
       name: new RegExp(`^${name} -`),
       userId: req.user.uid,
+      date
     })
 
     if (existingTask) {
@@ -71,31 +72,6 @@ router.post("/add-task", authMiddleware, async (req: AuthRequest, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
-  }
-});
-
-
-
-
-router.get('/stats', async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      throw new Error('MongoDB not connected');
-    }
-
-    const collections = await mongoose.connection.db.listCollections().toArray();
-
-    res.json({
-      message: 'Backend is connected',
-      mongoStatus: 'Connected',
-      collectionsCount: collections.length
-    });
-  } catch (error) {
-    console.error('Error fetching MongoDB stats:', error);
-    res.status(500).json({
-      error: 'Failed to fetch MongoDB stats',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
   }
 });
 

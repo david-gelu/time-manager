@@ -105,7 +105,7 @@ export default function TableComponent() {
           }
         }
 
-        return <div>{value}</div>;
+        return <div className='wrap-break-word whitespace-break-spaces'>{value}</div>;
       },
       enableSorting: true,
       enableHiding: true,

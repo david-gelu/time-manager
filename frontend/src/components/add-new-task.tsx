@@ -81,7 +81,7 @@ export default function AddNewTask() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Add task</Button>
+        <Button variant="outline">Add Daily tasks</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[70vw]">
@@ -93,12 +93,13 @@ export default function AddNewTask() {
           <div className="grid gap-4">
             {error && <p className="text-red-500">{error}</p>}
             <div className="grid gap-3">
-              <Label htmlFor="name">Task name</Label>
+              <Label htmlFor="name">Daily task name</Label>
               <Input
                 id="name"
                 name="name"
                 placeholder="New task to do"
                 value={name}
+                maxLength={15}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
@@ -107,7 +108,7 @@ export default function AddNewTask() {
               <Textarea
                 id="details"
                 name="details"
-                placeholder="Details about the task"
+                placeholder="Details about the tasks"
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
               />
