@@ -1,14 +1,6 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { fetchBackendData } from './useBackendData';
 import { getAllDailyTasks, createDailyTask } from './dailyTasks';
 import type { DailyTasks } from '@/types';
-
-export function useBackendData() {
-  return useQuery({
-    queryKey: ['backendData'],
-    queryFn: fetchBackendData,
-  });
-}
 
 export function useAllDailyTasks() {
   return useQuery({

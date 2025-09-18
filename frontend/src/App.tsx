@@ -37,7 +37,6 @@ import {
 } from "@/components/ui/collapsible"
 import { AuthProvider } from './contexts/AuthContext';
 import { NavUser } from "./components/nav-user"
-import { TestBackend } from '@/components/TestBackend';
 import AddNewTask from "./components/add-new-task"
 
 export default function App() {
@@ -236,7 +235,6 @@ export default function App() {
 
             <main className="flex flex-col items-center justify-center">
               <Outlet />
-              <TestBackend />
             </main>
           </SidebarInset>
         </SidebarProvider>
