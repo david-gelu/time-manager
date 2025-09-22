@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ChevronUp
 } from 'lucide-react'
+import { motion, AnimatePresence } from "framer-motion"
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -113,11 +114,12 @@ export default function TableComponent() {
         accessorKey: 'date',
         header: 'Date',
         enableSorting: true,
+        accessorFn: (row) => new Date(row.date).getTime(), // returnează numeric pentru sortare corectă
         cell: ({ row }) => {
-          const value = row.getValue('date') as string | number | Date;
+          const value = row.original.date; // păstrăm valoarea originală pentru afișare
           const date = new Date(value);
           return !isNaN(date.getTime()) ? <div>{format(date, 'dd-MM-yyyy HH:mm')}</div> : <div>Invalid date</div>;
-        }
+        },
       },
       {
         id: 'progress',
@@ -133,7 +135,7 @@ export default function TableComponent() {
           return (
             <div className="flex flex-col gap-1">
               <Progress value={tasksDone} inProgress={tasksProgress} />
-              <span className="text-xs text-muted-foreground">{done} from {total} task are done, {inProgress} in progress</span>
+              <span className="text-xs text-muted-foreground">{done} task are done and {inProgress} in progress from {total}</span>
             </div>
           );
         }
@@ -186,7 +188,7 @@ export default function TableComponent() {
     },
     initialState: {
       pagination: {
-        pageSize: 20,
+        pageSize: 10,
       },
     },
   })
@@ -217,7 +219,7 @@ export default function TableComponent() {
         return hasNewColumns ? newWidths : prev
       })
     }
-  }, [visibleColumns.map(col => col.id).join(','), expandedRows])
+  }, [visibleColumns.map(col => col.id).join(',')])
 
   const handleMouseResize = (columnId: string, index: number) => {
     const handleMouseDown = (e: MouseEvent) => {
@@ -227,18 +229,16 @@ export default function TableComponent() {
 
       const handleMouseMove = (e: globalThis.MouseEvent) => {
         const diff = e.clientX - startX
-        const containerWidth = 800
-        const diffPercent = (diff / containerWidth) * 100
 
         setColWidths(prev => {
           const newWidths = { ...prev }
-          const currentWidth = startWidths[columnId] || 25
-          const newCurrentWidth = Math.max(5, currentWidth + diffPercent)
+          const currentWidth = startWidths[columnId] || 9
+          const newCurrentWidth = Math.max(50, currentWidth + diff)
 
           if (index < visibleColumns.length - 1) {
             const nextColumn = visibleColumns[index + 1]
-            const nextWidth = startWidths[nextColumn.id] || 25
-            const newNextWidth = Math.max(5, nextWidth - diffPercent)
+            const nextWidth = startWidths[nextColumn.id] || 9
+            const newNextWidth = Math.max(50, nextWidth - diff)
             newWidths[columnId] = newCurrentWidth
             newWidths[nextColumn.id] = newNextWidth
           } else {
@@ -259,19 +259,20 @@ export default function TableComponent() {
     return handleMouseDown
   }
 
+
   return (
     <div className="px-4 w-full mx-auto">
       <div className="flex items-center justify-end py-1 gap-2">
         <Input
           type="text"
-          placeholder="Căutare..."
+          placeholder="Search..."
           value={globalFilter ?? ''}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
           className="max-w-[200px]"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline"><Columns className="mr-2 h-4 w-4" />Coloane</Button>
+            <Button variant="outline"><Columns className="mr-2 h-4 w-4" />Columns</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Vizibilitate coloane</DropdownMenuLabel>
@@ -298,7 +299,7 @@ export default function TableComponent() {
                   <TableHead
                     key={header.id}
                     className="relative border-r last:border-r-0 text-left align-top py-2 group cursor-pointer select-none"
-                    style={{ width: `${colWidths[header.id] || 25}%` }}
+                    style={{ width: `${colWidths[header.id] || 9}rem` }}
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     <div className="mx-3 flex items-center gap-1">
@@ -331,32 +332,58 @@ export default function TableComponent() {
               table.getRowModel().rows.map((row) => {
                 const task = row.original
                 const isExpanded = expandedRows.has(task._id)
+
                 return (
                   <Fragment key={row.id}>
+                    {/* Tabel principal row */}
                     <TableRow className="border-b hover:bg-muted/30">
                       {row.getVisibleCells().map(cell => (
-                        <TableCell className="py-0 border-r last:border-r-0" key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                        <TableCell
+                          className="py-0 border-r last:border-r-0"
+                          key={cell.id}
+                          style={{ width: `${colWidths[cell.column.id] || 9}rem` }}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
                       ))}
                     </TableRow>
-                    {isExpanded && task.tasks?.length > 0 && (
-                      <TableRow>
-                        <TableCell colSpan={visibleColumns.length} className="py-0 border-r last:border-r-0">
-                          <SubTable data={task.tasks} parentId={task._id} />
-                        </TableCell>
-                      </TableRow>
-                    )}
+
+                    {/* Subtable cu motion */}
+                    <TableRow>
+                      <TableCell colSpan={visibleColumns.length} className="p-0">
+                        <AnimatePresence initial={false}>
+                          {isExpanded && task.tasks?.length > 0 && (
+                            <motion.div
+                              key="subtable"
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3 }}
+                              style={{ overflow: "hidden" }}
+                            >
+                              <SubTable data={task.tasks} parentId={task._id} />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </TableCell>
+                    </TableRow>
                   </Fragment>
                 )
               })
             ) : (
-              <TableRow className='w-full  w-full flex flex-col items-center  h-[60vh]'>
-                <TableCell colSpan={visibleColumns.length} className="p-8 text-center w-full flex flex-col items-center gap-2 text-xl absolute left-[0%] top-[25%] -translate-50%">
+              <TableRow className="w-full flex flex-col items-center h-[60vh]">
+                <TableCell
+                  colSpan={visibleColumns.length}
+                  className="p-8 text-center w-full flex flex-col items-center gap-2 text-xl absolute left-[0%] top-[25%] -translate-50%"
+                >
                   <TableCellsMerge className="h-20 w-full" />
                   Nu s-au găsit rezultate.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
+
+
         </Table>
 
         <div className="flex items-center mt-auto justify-between p-4 bg-muted/50 border-t">

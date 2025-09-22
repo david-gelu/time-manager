@@ -1,6 +1,6 @@
 import { useEffect, useState, type MouseEvent } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { MoveHorizontal, MoreHorizontal } from 'lucide-react'
+import { MoveHorizontal, MoreHorizontal, Settings2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { format } from 'date-fns'
 import EditTask from '../edit-tasks'
@@ -109,7 +109,7 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
                 </TableHead>
               ))}
               <TableHead className="text-left capitalize px-4 font-medium border-r last:border-r-0">
-                Actions
+                <Settings2 />
               </TableHead>
             </TableRow>
           </TableHeader>

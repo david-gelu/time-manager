@@ -6,7 +6,10 @@ function Table({ className, ...props }: ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-auto max-h-[70dvh]"
+      className={cn(
+        "relative w-full max-h-[70dvh] overflow-y-auto overflow-x-auto",
+        "scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 scrollbar-track-transparent"
+      )}
     >
       <table
         data-slot="table"
@@ -16,6 +19,8 @@ function Table({ className, ...props }: ComponentProps<"table">) {
     </div>
   )
 }
+
+
 
 function TableHeader({ className, ...props }: ComponentProps<"thead">) {
   return (

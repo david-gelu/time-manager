@@ -4293,6 +4293,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"framer-motion@npm:^12.23.18":
+  version: 12.23.18
+  resolution: "framer-motion@npm:12.23.18"
+  dependencies:
+    motion-dom: "npm:^12.23.18"
+    motion-utils: "npm:^12.23.6"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    "@emotion/is-prop-valid": "*"
+    react: ^18.0.0 || ^19.0.0
+    react-dom: ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@emotion/is-prop-valid":
+      optional: true
+    react:
+      optional: true
+    react-dom:
+      optional: true
+  checksum: 10c0/059fed39a1f7c1d277ac9ab94da093e0498d59b29de1a2ae5a040d080b644f34bc8862314d45676dfb93adeae01b6c5c84309b2799075b8d2c028ae1d493808d
+  languageName: node
+  linkType: hard
+
 "fresh@npm:0.5.2":
   version: 0.5.2
   resolution: "fresh@npm:0.5.2"
@@ -4333,6 +4355,7 @@ __metadata:
     cmdk: "npm:^1.1.1"
     date-fns: "npm:^4.1.0"
     firebase: "npm:^12.1.0"
+    framer-motion: "npm:^12.23.18"
     lucide-react: "npm:^0.536.0"
     next-themes: "npm:^0.4.6"
     postcss: "npm:^8.5.6"
@@ -5462,6 +5485,22 @@ __metadata:
     ms: "npm:2.1.3"
     sift: "npm:16.0.1"
   checksum: 10c0/b7ed9d8ba899e085a6ddff1754dea14ea996979a3f8d711f430545284ffc9d0ee8eaf9512630711fbcd1d3e3fbdea0b2671bc69c19544b2ed0606dd470607050
+  languageName: node
+  linkType: hard
+
+"motion-dom@npm:^12.23.18":
+  version: 12.23.18
+  resolution: "motion-dom@npm:12.23.18"
+  dependencies:
+    motion-utils: "npm:^12.23.6"
+  checksum: 10c0/eea2db02f222deb1fb615d8e3c7d9ec3ac970fe27326e3bdf81d92ff0227fab7b7219170aaec0c514ff2a5ceb03c40244e7d7144c3fcac33bed648dd644bfde5
+  languageName: node
+  linkType: hard
+
+"motion-utils@npm:^12.23.6":
+  version: 12.23.6
+  resolution: "motion-utils@npm:12.23.6"
+  checksum: 10c0/c058e8ba6423b3baa63e985bcc669877ee7d9579d938f5348b4e60c5ea1b4b33dd7f4877434436a4a5807f3cf00370d3fd4079a6fdd6309c5c87aa62b311a897
   languageName: node
   linkType: hard
 
