@@ -106,19 +106,16 @@ export default function AddSubTask({ open: openModal, onOpenChange, task }: AddS
   return (
     <Dialog open={openModal} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline">Add Subtask</Button>
+        <Button variant="outline">Add Sub task</Button>
       </DialogTrigger>
-
       <DialogContent className="sm:max-w-[70vw]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Add Subtask {task?.name ? `for ${task?.name}` : ""}</DialogTitle>
             <DialogDescription>Fill in the details below to create a new subtask</DialogDescription>
           </DialogHeader>
-
           <div className="grid gap-4 mt-4">
             {error && <p className="text-red-500">{error}</p>}
-
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="name">Subtask name</Label>
@@ -148,7 +145,6 @@ export default function AddSubTask({ open: openModal, onOpenChange, task }: AddS
                 </DropdownMenu>
               </div>
             </div>
-
             <div className="grid gap-3">
               <Label htmlFor="details">Details</Label>
               <Textarea
@@ -170,7 +166,6 @@ export default function AddSubTask({ open: openModal, onOpenChange, task }: AddS
                   onChange={setStartDate}
                 />
               </div>
-
               <div className="grid gap-2">
                 <Label>End date</Label>
                 <Calendar
@@ -183,7 +178,6 @@ export default function AddSubTask({ open: openModal, onOpenChange, task }: AddS
               </div>
             </div>
           </div>
-
           <DialogFooter className="flex justify-between mt-4">
             <Button
               className="bg-teal-400"

@@ -30,6 +30,7 @@ import { Progress } from '../ui/progress'
 import { useAllDailyTasks } from '@/lib/queries'
 import { format } from 'date-fns'
 import AddSubTask from '../add-sub-task'
+import EditTask from '../edit-tasks'
 
 export default function TableComponent() {
   const { data = [], isLoading } = useAllDailyTasks()
@@ -39,6 +40,7 @@ export default function TableComponent() {
   const [globalFilter, setGlobalFilter] = useState<string>('')
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [openModal, setOpenModal] = useState(false)
+  const [openEditModal, setOpenEditModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState<DailyTasks | null>(null)
   const STORAGE_KEY = 'table-column-widths'
 
@@ -147,7 +149,10 @@ export default function TableComponent() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenModal(true) }}>
-                Add Subtask
+                Add sub task
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenEditModal(true) }}>
+                Edit daily task
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -382,6 +387,11 @@ export default function TableComponent() {
         open={openModal}
         onOpenChange={setOpenModal}
         task={selectedTask as DailyTasks}
+      />}
+      {openEditModal && <EditTask
+        open={openEditModal}
+        onOpenChange={setOpenEditModal}
+        dailyTask={selectedTask as DailyTasks}
       />}
     </div>
   )

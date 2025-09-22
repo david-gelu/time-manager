@@ -3,15 +3,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { MoveHorizontal, MoreHorizontal } from 'lucide-react'
 import { Button } from '../ui/button'
 import { format } from 'date-fns'
+import EditTask from '../edit-tasks'
+import type { Task } from '@/types'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 
 interface SubTableProps<T extends Record<string, any>> {
-  data: T[]
+  data: Task[]
   parentId: string
   onAction?: (row: T) => void
 }
 
 export default function SubTable<T extends Record<string, any>>({ data, parentId, onAction }: SubTableProps<T>) {
   const SUB_TABLE_STORAGE_KEY = 'sub-table-column-widths'
+  const [openEditModal, setOpenEditModal] = useState(false)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [childColWidths, setChildColWidths] = useState<Record<string, Record<string, number>>>(() => {
     try {
       const saved = localStorage.getItem(SUB_TABLE_STORAGE_KEY)
@@ -25,9 +30,12 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
     try { localStorage.setItem(SUB_TABLE_STORAGE_KEY, JSON.stringify(childColWidths)) } catch { }
   }, [childColWidths])
 
-  const allColumns: (keyof T)[] = data.length > 0 ? Object.keys(data[0]).filter(k => k !== '_id') as (keyof T)[] : []
+  const allColumns: (keyof Task)[] = data.length > 0 ?
+    (Object.keys(data[0]).filter(k => k !== "_id") as (keyof Task)[]) :
+    []
 
-  const columnOrder: (keyof T)[] = ['task_name', 'description', 'status', 'start_date', 'end_date'] as (keyof T)[]
+  const columnOrder: (keyof Task)[] = ["task_name", "description", "status", "start_date", "end_date"]
+
   const childColumnsOrdered = columnOrder.filter(c => allColumns.includes(c))
 
   const handleChildMouseResize = (columnId: string, index: number) => {
@@ -71,7 +79,7 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
 
   const widths = childColWidths[parentId] || {}
 
-  const renderCellValue = (row: T, col: keyof T) => {
+  const renderCellValue = (row: Task, col: keyof Task) => {
     if ((col === 'start_date' || col === 'end_date') && row[col]) {
       const date = new Date(row[col])
       return isNaN(date.getTime()) ? 'Invalid date' : format(date, 'dd-MM-yyyy HH:mm')
@@ -118,15 +126,27 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
                   </TableCell>
                 ))}
                 <TableCell className="px-4 border-r last:border-r-0">
-                  <Button size="sm" variant="ghost" onClick={() => onAction?.(row)}>
-                    <MoreHorizontal />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-6 w-6 p-0"><MoreHorizontal /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => { setSelectedTask(row); setOpenEditModal(true) }}>
+                        Edit daily task
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+      {openEditModal && <EditTask
+        open={openEditModal}
+        onOpenChange={setOpenEditModal}
+        subTask={selectedTask as Task}
+      />}
     </div>
   )
 }
