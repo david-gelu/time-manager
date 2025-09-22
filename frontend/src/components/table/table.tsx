@@ -126,14 +126,14 @@ export default function TableComponent() {
         cell: ({ row }: any) => {
           const tasks = row.original.tasks;
           const total = tasks.length;
-          const doneOrInProgress = tasks.filter(
-            (t: Task) => t.status === Status.IN_PROGRESS || t.status === Status.COMPLETED
-          ).length;
-          const tasksProgress = total ? (doneOrInProgress / total) * 100 : 0;
+          const done = tasks.filter((t: Task) => t.status === Status.COMPLETED).length;
+          const inProgress = tasks.filter((t: Task) => t.status === Status.IN_PROGRESS).length;
+          const tasksDone = total ? (done / total) * 100 : 0;
+          const tasksProgress = total ? (inProgress / total) * 100 : 0;
           return (
             <div className="flex flex-col gap-1">
-              <Progress value={tasksProgress} />
-              <span className="text-xs text-muted-foreground">{doneOrInProgress} din {total} sarcini</span>
+              <Progress value={tasksDone} inProgress={tasksProgress} />
+              <span className="text-xs text-muted-foreground">{done} from {total} task are done, {inProgress} in progress</span>
             </div>
           );
         }

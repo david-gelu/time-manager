@@ -132,7 +132,7 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={() => { setSelectedTask(row); setOpenEditModal(true) }}>
-                        Edit daily task
+                        Edit sub task
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

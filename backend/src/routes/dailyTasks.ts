@@ -1,10 +1,24 @@
 import { Router } from "express"
 import { DailyTasksModel } from "../models"
-import mongoose from "mongoose"
 import { authMiddleware, AuthRequest } from "../middleware/authMiddleware"
 import { format, parseISO } from "date-fns"
+import { Status } from "../models/table-model"
 
 const router = Router()
+
+function recalcDailyTaskStatus(parentTask: any) {
+  if (!parentTask.tasks || parentTask.tasks.length === 0) {
+    return Status.NEW
+  }
+
+  const hasInProgress = parentTask.tasks.some((t: any) => t.status === Status.IN_PROGRESS)
+  const allCompleted = parentTask.tasks.every((t: any) => t.status === Status.COMPLETED)
+
+  if (hasInProgress) return Status.IN_PROGRESS
+  if (allCompleted) return Status.COMPLETED
+  return Status.NEW
+} // to move from here
+
 
 router.post("/", async (req, res) => {
   try {
@@ -130,7 +144,7 @@ router.post("/add-sub-task", authMiddleware, async (req: AuthRequest, res) => {
       { $push: { tasks: taskData } },
       { new: true }
     )
-
+    parentTask.status = recalcDailyTaskStatus(parentTask)
     res.status(201).json(parentTask)
   } catch (err) {
     console.error(err)
@@ -159,6 +173,7 @@ router.post("/edit-sub-task", authMiddleware, async (req: AuthRequest, res) => {
     )
 
     parentTask.tasks = updatedTasks
+    parentTask.status = recalcDailyTaskStatus(parentTask)
     await parentTask.save()
 
     res.status(200).json(parentTask)
