@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -55,7 +56,7 @@ export default function AddNewTask() {
 
     try {
       const taskData: DailyTasks = {
-        id: "",
+        _id: "",
         name,
         description: details,
         date: isoDate || '',
@@ -87,13 +88,14 @@ export default function AddNewTask() {
       <DialogContent className="sm:max-w-[70vw]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>New Task</DialogTitle>
+            <DialogTitle>Add daily task</DialogTitle>
+            <DialogDescription></DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4">
+          <div className="grid gap-4 mt-4">
             {error && <p className="text-red-500">{error}</p>}
             <div className="grid gap-3">
-              <Label htmlFor="name">Daily task name</Label>
+              <Label htmlFor="name">Task name</Label>
               <Input
                 id="name"
                 name="name"

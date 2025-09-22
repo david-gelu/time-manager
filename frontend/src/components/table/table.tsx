@@ -17,7 +17,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  ChevronUp
 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Button } from '../ui/button'
@@ -28,14 +29,17 @@ import { Status, type DailyTasks, type Task } from '@/types'
 import { Progress } from '../ui/progress'
 import { useAllDailyTasks } from '@/lib/queries'
 import { format } from 'date-fns'
+import AddSubTask from '../add-sub-task'
 
 export default function TableComponent() {
-  const { data = [], isLoading, isError, error } = useAllDailyTasks()
-  const [sorting, setSorting] = useState<any[]>([])
+  const { data = [], isLoading } = useAllDailyTasks()
+  const [sorting, setSorting] = useState([{ id: 'date', desc: true }])
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
   const [globalFilter, setGlobalFilter] = useState<string>('')
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [openModal, setOpenModal] = useState(false)
+  const [selectedTask, setSelectedTask] = useState<DailyTasks | null>(null)
   const STORAGE_KEY = 'table-column-widths'
 
 
@@ -69,106 +73,106 @@ export default function TableComponent() {
   }
 
   const generateColumns = (): ColumnDef<DailyTasks>[] => {
-    if (isLoading && !data || !data.length) return []
-
-    const keys = data.length ? Object.keys(data[0])?.filter(k => k !== "__v" && k !== "_id" && k !== "tasks" && k !== "userId") : []
+    if (isLoading && !data || !data.length) return [];
 
     const expanderCol: ColumnDef<DailyTasks> = {
       id: "expander",
       header: () => <div className="w-fit"></div>,
       cell: ({ row }) => {
-        const task = row.original
-        if (!task.tasks?.length) return <div className="w-fit"></div>
+        const task = row.original;
+        if (!task.tasks?.length) return <div className="w-fit"></div>;
         return (
-          <Button variant="ghost" className="h-6 w-fit p-0" onClick={() => toggleRowExpansion(task.id)}>
-            {expandedRows.has(task.id) ? <ChevronDown className="h-4 w-fit" /> : <ChevronRight className="h-4 w-fit" />}
+          <Button variant="ghost" className="h-6 w-fit p-0" onClick={() => toggleRowExpansion(task._id)}>
+            {expandedRows.has(task._id) ? <ChevronDown className="h-4 w-fit" /> : <ChevronRight className="h-4 w-fit" />}
           </Button>
-        )
+        );
       },
       enableSorting: false,
       enableHiding: false,
-    }
+    };
 
-    const dynamicCols = keys.map(key => ({
-      accessorKey: key,
-      id: key,
-      header: key,
-      cell: ({ row }: any) => {
-        const value = row.getValue(key);
-
-        if (key === 'date' && value) {
-          const date = new Date(value);
-          if (!isNaN(date.getTime())) {
-            return <div>{format(date, 'dd-MM-yyyy HH:mm')}</div>;
-          } else {
-            return <div>Invalid date</div>;
-          }
-        }
-
-        return <div className='wrap-break-word whitespace-break-spaces'>{value}</div>;
+    const columns: ColumnDef<DailyTasks>[] = [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        enableSorting: true,
       },
-      enableSorting: true,
-      enableHiding: true,
-    }));
-
-    const actionCol: ColumnDef<DailyTasks> = {
-      id: "actions",
-      enableHiding: false,
-      header: () => <div className="w-fit"></div>,
-      cell: ({ row }: any) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-6 w-6 p-0"><MoreHorizontal /></Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => navigator.clipboard?.writeText(String(row.original.id))}>Copiază ID</DropdownMenuItem>
-            <DropdownMenuItem>Vezi detalii</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    }
-
-    const progressCol: ColumnDef<DailyTasks> = {
-      id: "progress",
-      enableHiding: false,
-      header: () => <div className="w-fit">Progress</div>,
-      cell: ({ row }: any) => {
-        const tasks = row.original.tasks
-        const total = tasks.length
-        const doneOrInProgress = tasks.filter(
-          (t: Task) => t.status === Status.IN_PROGRESS || t.status === Status.COMPLETED
-        ).length
-
-        const tasksProgress = total ? (doneOrInProgress / total) * 100 : 0
-
-        return (
-          <div className="flex flex-col gap-1">
-            <Progress value={tasksProgress} />
-            <span className="text-xs text-muted-foreground">
-              {doneOrInProgress} din {total} sarcini
-            </span>
-          </div>
+      {
+        accessorKey: 'description',
+        header: 'Description',
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        enableSorting: true,
+      },
+      {
+        accessorKey: 'date',
+        header: 'Date',
+        enableSorting: true,
+        cell: ({ row }) => {
+          const value = row.getValue('date') as string | number | Date;
+          const date = new Date(value);
+          return !isNaN(date.getTime()) ? <div>{format(date, 'dd-MM-yyyy HH:mm')}</div> : <div>Invalid date</div>;
+        }
+      },
+      {
+        id: 'progress',
+        header: 'Progress',
+        enableSorting: false,
+        cell: ({ row }: any) => {
+          const tasks = row.original.tasks;
+          const total = tasks.length;
+          const doneOrInProgress = tasks.filter(
+            (t: Task) => t.status === Status.IN_PROGRESS || t.status === Status.COMPLETED
+          ).length;
+          const tasksProgress = total ? (doneOrInProgress / total) * 100 : 0;
+          return (
+            <div className="flex flex-col gap-1">
+              <Progress value={tasksProgress} />
+              <span className="text-xs text-muted-foreground">{doneOrInProgress} din {total} sarcini</span>
+            </div>
+          );
+        }
+      },
+      {
+        id: "actions",
+        header: () => <div className="w-fit"></div>,
+        enableHiding: false,
+        cell: ({ row }: any) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-6 w-6 p-0"><MoreHorizontal /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenModal(true) }}>
+                Add Subtask
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )
       }
-    }
+    ];
 
-    return [expanderCol, ...dynamicCols, progressCol, actionCol]
-  }
+    return data.some(d => d.tasks.length > 0) ? [expanderCol, ...columns] : columns;
+  };
+
 
   const columns = useMemo(() => generateColumns(), [data, expandedRows])
 
   const table = useReactTable({
     data: data || [],
     columns,
+    state: { sorting, columnFilters, columnVisibility, globalFilter },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: setGlobalFilter,
-    state: { sorting, columnFilters, columnVisibility, globalFilter },
     globalFilterFn: (row, columnId, filterValue) => {
       const searchValue = String(filterValue).toLowerCase().trim()
       if (!searchValue) return true
@@ -288,20 +292,26 @@ export default function TableComponent() {
                 {headerGroup.headers.map((header, index) => (
                   <TableHead
                     key={header.id}
-                    className="relative border-r last:border-r-0 text-left align-top py-2"
+                    className="relative border-r last:border-r-0 text-left align-top py-2 group cursor-pointer select-none"
                     style={{ width: `${colWidths[header.id] || 25}%` }}
+                    onClick={header.column.getToggleSortingHandler()}
                   >
-                    <div className="mx-3">
+                    <div className="mx-3 flex items-center gap-1">
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+
+                      <span className="ml-1 transition-opacity duration-200">
+                        {{
+                          asc: <ChevronUp className="h-3 w-3" />,
+                          desc: <ChevronDown className="h-3 w-3" />
+                        }[header.column.getIsSorted() as string] ?? null}
+                      </span>
                     </div>
+
                     {index < headerGroup.headers.length - 1 && (
                       <MoveHorizontal
-                        className="absolute z-10 right-0 top-1/3 translate-x-1/2 -translate-y-1/2 h-4 w-5 bg-border cursor-col-resize hover:bg-primary transition-colors rounded"
+                        className="absolute z-10 right-0 top-1/3 translate-x-1/2 -translate-y-1/2 h-4 w-5 bg-border cursor-col-resize hover:bg-primary transition-colors rounded opacity-0 group-hover:opacity-100"
                         onMouseDown={handleMouseResize(header.id, index)}
                       />
                     )}
@@ -315,7 +325,7 @@ export default function TableComponent() {
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
                 const task = row.original
-                const isExpanded = expandedRows.has(task.id)
+                const isExpanded = expandedRows.has(task._id)
                 return (
                   <Fragment key={row.id}>
                     <TableRow className="border-b hover:bg-muted/30">
@@ -326,7 +336,7 @@ export default function TableComponent() {
                     {isExpanded && task.tasks?.length > 0 && (
                       <TableRow>
                         <TableCell colSpan={visibleColumns.length} className="py-0 border-r last:border-r-0">
-                          <SubTable data={task.tasks} parentId={task.id} />
+                          <SubTable data={task.tasks} parentId={task._id} />
                         </TableCell>
                       </TableRow>
                     )}
@@ -368,6 +378,11 @@ export default function TableComponent() {
           </Button>
         </div>
       </div>
+      {openModal && <AddSubTask
+        open={openModal}
+        onOpenChange={setOpenModal}
+        task={selectedTask as DailyTasks}
+      />}
     </div>
   )
 }

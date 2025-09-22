@@ -1,5 +1,26 @@
 import { auth } from "@/lib/firebase";
-import type { DailyTasks } from "@/types";
+import type { DailyTasks, Task } from "@/types";
+
+
+export async function getAllDailyTasks(): Promise<DailyTasks[]> {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error("No user logged in");
+
+  const res = await fetch("/api/daily-tasks", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    throw new Error(json?.error || "Failed to get tasks");
+  }
+
+  return res.json() || [];
+}
+
 
 export async function createDailyTask(taskData: DailyTasks) {
   const token = await auth.currentUser?.getIdToken();
@@ -21,21 +42,23 @@ export async function createDailyTask(taskData: DailyTasks) {
   return res.json();
 }
 
-export async function getAllDailyTasks(): Promise<DailyTasks[]> {
+
+export async function createSubTask(taskData: Task, parentTaskId: string) {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error("No user logged in");
-
-  const res = await fetch("/api/daily-tasks", {
-    method: "GET",
+  const res = await fetch("/api/daily-tasks/add-sub-task", {
+    method: "POST",
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
+    body: JSON.stringify({ parentTaskId, taskData }),
   });
 
   if (!res.ok) {
     const json = await res.json().catch(() => null);
-    throw new Error(json?.error || "Failed to get tasks");
+    throw new Error(json?.error || "Failed to create sub task");
   }
 
-  return res.json() || [];
+  return res.json();
 }

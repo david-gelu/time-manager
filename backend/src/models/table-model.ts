@@ -1,28 +1,38 @@
-import { model, Model, Schema, Types } from "mongoose";
+import { model, Model, Schema, Types } from 'mongoose';
 
-enum Status {
+export enum Status {
   NEW = 'new',
   IN_PROGRESS = 'in progress',
-  COMPLETED = 'completed'
+  COMPLETED = 'completed',
 }
 
+export type SubTask = {
+  _id: Types.ObjectId;
+  task_name: string;
+  status: Status;
+  start_date: string;
+  end_date: string;
+  description: string;
+};
 
 export interface DailyTasks {
   _id: Types.ObjectId;
-  name: string,
-  date: string,
-  status: Status
-  description: string,
-  userId: string,
-  tasks: {
-    _id: Types.ObjectId
-    task_name: string,
-    status: Status,
-    start_date: string,
-    end_date: string,
-    description: string
-  }[]
+  name: string;
+  date: string;
+  status: Status;
+  description: string;
+  userId: string;
+  tasks: SubTask[];
 }
+
+const SubTaskSchema = new Schema<SubTask>({
+  task_name: { type: String, required: true },
+  status: { type: String, enum: Object.values(Status), default: Status.NEW },
+  start_date: { type: String, required: true },
+  end_date: { type: String, required: true },
+  description: { type: String, required: true },
+});
+
 
 const DailyTasksSchema = new Schema<DailyTasks, DailyTasksModel>({
   name: { type: String, required: true },
@@ -30,20 +40,12 @@ const DailyTasksSchema = new Schema<DailyTasks, DailyTasksModel>({
   status: { type: String, enum: Object.values(Status), default: Status.NEW },
   description: { type: String, required: true, default: 'This are my tasks for today' },
   userId: { type: String, required: true },
-  tasks: {
-    type: [new Schema({
-      _id: { type: Types.ObjectId, required: true },
-      task_name: { type: String, required: true },
-      status: { type: String, enum: Object.values(Status), default: Status.NEW },
-      start_date: { type: String, required: true },
-      end_date: { type: String, required: true },
-      description: { type: String, required: true }
-    })]
-  }
+  tasks: { type: [SubTaskSchema], default: [] },
 });
 
-interface DailyTasksModel extends Model<DailyTasks> { }
 
 DailyTasksSchema.index({ name: 1, date: 1 }, { unique: true });
+
+interface DailyTasksModel extends Model<DailyTasks> { }
 
 export const DailyTasksModel = model<DailyTasks, DailyTasksModel>('DailyTasks', DailyTasksSchema);

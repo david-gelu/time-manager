@@ -7,7 +7,7 @@ export const Status = {
 export type Status = (typeof Status)[keyof typeof Status];
 
 export type Task = {
-  id: string,
+  _id?: string,
   task_name: string,
   status: Status,
   start_date: string,
@@ -16,7 +16,7 @@ export type Task = {
 }
 
 export interface DailyTasks {
-  id: string,
+  _id: string,
   name: string,
   date: string,
   status: Status

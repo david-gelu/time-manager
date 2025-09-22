@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Calendar as PrimereactCalendar } from "primereact/calendar";
 import { Button } from "./ui/button";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "./ui/dialog";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from "./ui/dialog";
 import { format } from "date-fns";
 import type { Nullable } from "primereact/ts-helpers";
 import { type AllHTMLAttributes } from "react";
@@ -74,7 +74,7 @@ export default function Calendar({
       <DialogContent className="z-[99999] w-full max-w-full sm:max-w-[85vw] md:max-w-[70vw] lg:max-w-[40vw]">
         <DialogHeader>
           <DialogTitle>Calendar</DialogTitle>
-          {desc && <div>{desc}</div>}
+          <DialogDescription>{desc && desc}</DialogDescription>
         </DialogHeader>
         <PrimereactCalendar
           inline={inline}

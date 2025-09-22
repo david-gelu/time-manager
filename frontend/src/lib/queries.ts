@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { getAllDailyTasks, createDailyTask } from './dailyTasks';
-import type { DailyTasks } from '@/types';
+import { getAllDailyTasks, createDailyTask, createSubTask } from './dailyTasks';
+import type { DailyTasks, Task } from '@/types';
 
 export function useAllDailyTasks() {
   return useQuery({
@@ -15,6 +15,22 @@ export function useCreateDailyTask() {
 
   return useMutation({
     mutationFn: (task: DailyTasks) => createDailyTask(task),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] });
+    },
+  });
+}
+
+interface CreateSubTaskInput {
+  task: Task;
+  parentTaskId: string;
+}
+
+export function useCreateSubTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ task, parentTaskId }: CreateSubTaskInput) => createSubTask(task, parentTaskId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] });
     },
