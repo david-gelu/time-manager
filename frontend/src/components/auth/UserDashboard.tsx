@@ -62,6 +62,7 @@ export function UserDashboard() {
     } catch (err) {
       toast.error('Actualizarea profilului a eșuat')
     } finally {
+      window.location.reload()
       setLoading(false)
     }
   }

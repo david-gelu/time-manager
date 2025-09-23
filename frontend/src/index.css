@@ -279,3 +279,50 @@ body {
 .p-timepicker > div {
   flex-direction: row;
 }
+:root {
+  --scrollbar-thumb: oklch(0.554 0.046 257.417 / 0.3);
+  --scrollbar-thumb-hover: oklch(0.554 0.046 257.417 / 0.5);
+  --scrollbar-track: transparent;
+}
+
+.dark {
+  --scrollbar-thumb: oklch(0.704 0.04 256.788 / 0.3);
+  --scrollbar-thumb-hover: oklch(0.704 0.04 256.788 / 0.5);
+  --scrollbar-track: transparent;
+}
+
+.scroll-container {
+  scrollbar-gutter: stable both-edges;
+  overflow-y: auto;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* WebKit */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Elimină săgețile și colțurile */
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-button:single-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}

@@ -5,7 +5,7 @@ import type { ComponentProps } from "react"
 function Table({ className, ...props }: ComponentProps<"table">) {
   return (
     <div
-      data-slot="table-container"
+      data-slot="table-container scroll-container"
       className={cn(
         "relative w-full max-h-[77dvh] overflow-y-auto overflow-x-auto",
         "scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 scrollbar-track-transparent"

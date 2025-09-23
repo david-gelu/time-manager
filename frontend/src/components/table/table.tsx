@@ -34,9 +34,10 @@ import AddSubTask from '../add-sub-task'
 import EditTask from '../edit-tasks'
 import { Label } from '../ui/label'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import { deleteDailyTask } from '@/lib/dailyTasks'
+import { deleteDailyTask, duplicateDailyTask } from '@/lib/dailyTasks'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
+import { Badge } from '../ui/badge'
 
 export default function TableComponent() {
   const { data = [], isLoading } = useAllDailyTasks()
@@ -116,8 +117,10 @@ export default function TableComponent() {
         enableSorting: true,
         cell: ({ row }) => {
           const status = row.original.status;
-          return <Label className={`px-2 py-1 rounded-full text-xs font-medium justify-center ${status === Status.COMPLETED ? 'bg-green-100 text-green-800' :
-            status === Status.IN_PROGRESS ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>{status}</Label>
+          return <Badge
+            variant={status === Status.COMPLETED ? 'secondary' : status === Status.IN_PROGRESS ? 'default' : 'destructive'}
+            className={`w-full capitalize`}
+          > {status}</Badge>
         }
       },
       {
@@ -164,7 +167,7 @@ export default function TableComponent() {
                 <Tooltip>
                   <TooltipTrigger> Add sub task</TooltipTrigger>
                   <TooltipContent>
-                    <p>Add new sub task for <strong>{row.original.name}</strong></p>
+                    <p>Add new sub task for <strong>{row.original.name}.</strong></p>
                   </TooltipContent>
                 </Tooltip>
               </DropdownMenuItem>
@@ -172,7 +175,21 @@ export default function TableComponent() {
                 <Tooltip>
                   <TooltipTrigger>Edit daily task</TooltipTrigger>
                   <TooltipContent>
-                    <p>Edit <strong>{row.original.name}</strong> task</p>
+                    <p>Edit <strong>{row.original.name}</strong> task.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => duplicateDailyTask(row.original).then(() => {
+                toast.success(`${row.original.name} task was duplicated successfully`)
+                queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
+              }).catch((err) => {
+                console.error(`🚀 ~ err:`, err)
+                toast.error("Failed to duplicate task")
+              })}>
+                <Tooltip>
+                  <TooltipTrigger>Duplicate daily task</TooltipTrigger>
+                  <TooltipContent>
+                    <p> This will duplicate the entire <strong>{row.original.name}</strong> task with sub tasks too.</p>
                   </TooltipContent>
                 </Tooltip>
               </DropdownMenuItem>
@@ -186,7 +203,7 @@ export default function TableComponent() {
                 <Tooltip>
                   <TooltipTrigger>Delete daily task</TooltipTrigger>
                   <TooltipContent>
-                    <p> This will delete the entire <strong>{row.original.name}</strong> task with sub tasks too</p>
+                    <p> This will delete the entire <strong>{row.original.name}</strong> task with sub tasks too.</p>
                   </TooltipContent>
                 </Tooltip>
               </DropdownMenuItem>

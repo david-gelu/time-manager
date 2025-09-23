@@ -38,6 +38,7 @@ import {
 import { AuthProvider } from './contexts/AuthContext';
 import { NavUser } from "./components/nav-user"
 import AddNewTask from "./components/add-new-task"
+import { ColumnWidthProvider } from "./contexts/ColumnWidthContext"
 
 export default function App() {
   const [openItems, setOpenItems] = useState<string[]>([])
@@ -200,43 +201,44 @@ export default function App() {
               <NavUser />
             </SidebarFooter>
           </Sidebar>
-
-          <SidebarInset>
-            <header className="sticky top-0 w-full h-16 flex items-center justify-between px-4 z-50 bg-background shadow overflow-x-auto">
-              <div className="flex items-center gap-2 min-w-0 w-full overflow-hidden">
-                <SidebarTrigger />
-                <Separator orientation="vertical" className="h-4" />
-                <Breadcrumb className="truncate min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
-                  <BreadcrumbList>
-                    {pathnames.length === 0 ? (
-                      <BreadcrumbItem>
-                        <BreadcrumbPage>Home</BreadcrumbPage>
-                      </BreadcrumbItem>
-                    ) : (
-                      <>
+          <ColumnWidthProvider>
+            <SidebarInset>
+              <header className="sticky top-0 w-full h-16 flex items-center justify-between px-4 z-50 bg-background shadow overflow-x-auto">
+                <div className="flex items-center gap-2 min-w-0 w-full overflow-hidden">
+                  <SidebarTrigger />
+                  <Separator orientation="vertical" className="h-4" />
+                  <Breadcrumb className="truncate min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                    <BreadcrumbList>
+                      {pathnames.length === 0 ? (
                         <BreadcrumbItem>
-                          <BreadcrumbLink asChild>
-                            <Link to="/">Home</Link>
-                          </BreadcrumbLink>
+                          <BreadcrumbPage>Home</BreadcrumbPage>
                         </BreadcrumbItem>
-                        <BreadcrumbSeparator className="hidden md:block" />
-                        {generateBreadcrumbs()}
-                      </>
-                    )}
-                  </BreadcrumbList>
-                </Breadcrumb>
-              </div>
-              <div className="shrink-0 ml-auto flex items-center gap-2">
-                <AddNewTask />
-                <Calendar inline showTime selectionMode="range" value={selectedDate} onChange={setSelectedDate} />
-                <ModeToggle />
-              </div>
-            </header>
+                      ) : (
+                        <>
+                          <BreadcrumbItem>
+                            <BreadcrumbLink asChild>
+                              <Link to="/">Home</Link>
+                            </BreadcrumbLink>
+                          </BreadcrumbItem>
+                          <BreadcrumbSeparator className="hidden md:block" />
+                          {generateBreadcrumbs()}
+                        </>
+                      )}
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                </div>
+                <div className="shrink-0 ml-auto flex items-center gap-2">
+                  <AddNewTask />
+                  <Calendar inline showTime selectionMode="range" value={selectedDate} onChange={setSelectedDate} />
+                  <ModeToggle />
+                </div>
+              </header>
 
-            <main className="flex flex-col items-center justify-center">
-              <Outlet />
-            </main>
-          </SidebarInset>
+              <main className="flex flex-col items-center justify-center">
+                <Outlet />
+              </main>
+            </SidebarInset>
+          </ColumnWidthProvider>
         </SidebarProvider>
       </ThemeProvider>
     </AuthProvider>

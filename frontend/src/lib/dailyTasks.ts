@@ -41,6 +41,25 @@ export async function createDailyTask(taskData: DailyTasks) {
 
   return res.json();
 }
+export async function duplicateDailyTask(taskData: DailyTasks) {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error("No user logged in");
+  const res = await fetch("/api/daily-tasks/duplicate-task", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ taskData }),
+  });
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    throw new Error(json?.error || "Failed to duplicate task");
+  }
+
+  return res.json();
+}
 
 export async function updateDailyTask(taskId: string, taskData: DailyTasks) {
   const token = await auth.currentUser?.getIdToken();

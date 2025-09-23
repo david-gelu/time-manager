@@ -3,22 +3,9 @@ import { DailyTasksModel } from "../models"
 import { authMiddleware, AuthRequest } from "../middleware/authMiddleware"
 import { format, parseISO } from "date-fns"
 import { Status } from "../models/table-model"
+import { dateFormat, recalcDailyTaskStatus, replaceDateKeepTime } from "../utils"
 
 const router = Router()
-
-function recalcDailyTaskStatus(parentTask: any) {
-  if (!parentTask.tasks || parentTask.tasks.length === 0) {
-    return Status.NEW
-  }
-
-  const hasInProgress = parentTask.tasks.some((t: any) => t.status === Status.IN_PROGRESS)
-  const allCompleted = parentTask.tasks.every((t: any) => t.status === Status.COMPLETED)
-
-  if (hasInProgress) return Status.IN_PROGRESS
-  if (allCompleted) return Status.COMPLETED
-  return Status.NEW
-} // to move from here
-
 
 router.post("/", async (req, res) => {
   try {
@@ -228,6 +215,40 @@ router.post("/delete-sub-task", authMiddleware, async (req: AuthRequest, res) =>
     await parentTask.save()
 
     res.status(200).json('Task deleted successfully')
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Server error" })
+  }
+})
+
+router.post("/duplicate-task", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" })
+
+    const { taskData } = req.body
+    if (!taskData) return res.status(400).json({ error: "taskData is required" })
+
+    const originalTask = await DailyTasksModel.findOne({ _id: taskData._id, userId: req.user.uid })
+    if (!originalTask) return res.status(404).json({ error: "Task not found" })
+
+    const duplicatedTaskData = {
+      _id: undefined,
+      name: `${originalTask.name.split(" - ")[0]} - ${dateFormat(originalTask.date).formattedNameDate}`,
+      date: dateFormat(originalTask.date).joindDate,
+      status: Status.NEW,
+      userId: req.user.uid,
+      description: originalTask.description,
+      tasks: originalTask.tasks.map(sub => ({
+        ...sub,
+        _id: undefined,
+        start_date: dateFormat(sub.start_date).joindDate,
+        end_date: dateFormat(sub.end_date).joindDate,
+        status: Status.NEW,
+      })),
+    }
+
+    const newTask = await DailyTasksModel.create(duplicatedTaskData)
+    res.status(201).json(newTask)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: "Server error" })

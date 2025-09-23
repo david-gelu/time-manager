@@ -1,38 +1,3 @@
-// import * as ProgressPrimitive from "@radix-ui/react-progress"
-// import { cn } from "@/lib/utils"
-// import type { ComponentProps } from "react"
-
-// interface ProgressProps extends ComponentProps<typeof ProgressPrimitive.Root> {
-//   value: number
-//   inProgress?: number
-// }
-// function Progress({ className, value, inProgress = 0, ...props }: ProgressProps) {
-//   console.log(100 - (value + inProgress || 0))
-//   return (
-//     <ProgressPrimitive.Root
-//       data-slot="progress"
-//       className={cn(
-//         "bg-primary/20 relative h-2 w-full overflow-hidden rounded-full",
-//         className
-//       )}
-//       {...props}
-//     >
-//       <ProgressPrimitive.Indicator
-//         data-slot="progress-indicator"
-//         className="bg-chart-2 h-full w-full flex-1 transition-all"
-//         style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-//       />
-//       <ProgressPrimitive.Indicator
-//         data-slot="progress-indicator"
-//         className="bg-destructive h-full w-full flex-1 transition-all"
-//         style={{ transform: `translateX(-${100 - (value + inProgress || 0)}%)` }}
-//       />
-//     </ProgressPrimitive.Root>
-//   )
-// }
-
-// export { Progress }
-
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 import { cn } from "@/lib/utils"
 import type { ComponentProps } from "react"
@@ -50,22 +15,30 @@ function Progress({ className, value, inProgress = 0, ...props }: ProgressProps)
     <ProgressPrimitive.Root
       data-slot="progress"
       className={cn(
-        "bg-primary/20 relative h-2 w-full overflow-hidden rounded-full flex",
+        "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
         className
       )}
       {...props}
     >
-      <div
-        className="bg-chart-2 h-full transition-all"
-        style={{ width: `${completed}%` }}
-      />
-      <div
-        className="bg-destructive h-full transition-all"
-        style={{ width: `${progress}%` }}
-      />
+      {completed > 0 && (
+        <div
+          className="absolute left-0 top-0 h-full bg-chart-2 transition-all rounded-full"
+          style={{ width: `${completed}%`, zIndex: 4 }}
+        />
+      )}
+      {progress > 0 && (
+        <div
+          className="absolute top-0 h-full bg-destructive transition-all"
+          style={{
+            left: completed > 0 ? `calc(${completed}% - 1px)` : '0%', // Doar 1px suprapunere
+            width: completed > 0 ? `calc(${progress}% + 1px)` : `${progress}%`, // Doar 1px extensie
+            borderRadius: completed > 0 ? '0 9999px 9999px 0' : '9999px', // Colțuri selective
+            zIndex: 3
+          }}
+        />
+      )}
     </ProgressPrimitive.Root>
   )
 }
 
 export { Progress }
-
