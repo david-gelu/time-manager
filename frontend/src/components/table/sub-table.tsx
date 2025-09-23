@@ -4,8 +4,9 @@ import { MoveHorizontal, MoreHorizontal, Settings2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { format } from 'date-fns'
 import EditTask from '../edit-tasks'
-import type { Task } from '@/types'
+import { Status, type Task } from '@/types'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
+import { Label } from '../ui/label'
 
 interface SubTableProps<T extends Record<string, any>> {
   data: Task[]
@@ -88,10 +89,10 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
   }
 
   return (
-    <div className="bg-muted/50 p-4 border-t">
+    <div className="bg-muted/30 p-2 border-t">
       <div className="overflow-x-auto max-h-auto">
-        <Table className="w-full text-sm">
-          <TableHeader className='border-b'>
+        <Table className="w-full text-sm round">
+          <TableHeader className='border-b bg-muted/50 '>
             <TableRow>
               {childColumnsOrdered.map((col, idx) => (
                 <TableHead
@@ -116,15 +117,13 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
           <TableBody>
             {data.map((row, rowIndex) => (
               <TableRow key={(row as any)._id || rowIndex} className="border-b hover:bg-muted/30">
-                {childColumnsOrdered.map(col => (
-                  <TableCell
-                    key={String(col)}
-                    className="px-4 border-r last:border-r-0"
-                    style={{ width: `${widths[String(col)] || 20}%`, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                  >
-                    {renderCellValue(row, col)}
-                  </TableCell>
-                ))}
+                {childColumnsOrdered.map(col => {
+                  return (<TableCell key={String(col)} className="px-4 border-r last:border-r-0" style={{ width: `${widths[String(col)] || 20}%`, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {col !== 'status' ? renderCellValue(row, col) :
+                      <Label className={`px-2 py-1 rounded-full text-xs font-medium ${row.status === Status.COMPLETED ? 'bg-green-100 text-green-800' :
+                        row.status === Status.IN_PROGRESS ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>{renderCellValue(row, col)}</Label>
+                    } </TableCell>);
+                })}
                 <TableCell className="px-4 border-r last:border-r-0">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

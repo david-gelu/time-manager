@@ -32,6 +32,7 @@ import { useAllDailyTasks } from '@/lib/queries'
 import { format } from 'date-fns'
 import AddSubTask from '../add-sub-task'
 import EditTask from '../edit-tasks'
+import { Label } from '../ui/label'
 
 export default function TableComponent() {
   const { data = [], isLoading } = useAllDailyTasks()
@@ -109,14 +110,19 @@ export default function TableComponent() {
         accessorKey: 'status',
         header: 'Status',
         enableSorting: true,
+        cell: ({ row }) => {
+          const status = row.original.status;
+          return <Label className={`px-2 py-1 rounded-full text-xs font-medium ${status === Status.COMPLETED ? 'bg-green-100 text-green-800' :
+            status === Status.IN_PROGRESS ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>{status}</Label>
+        }
       },
       {
         accessorKey: 'date',
         header: 'Date',
         enableSorting: true,
-        accessorFn: (row) => new Date(row.date).getTime(), // returnează numeric pentru sortare corectă
+        accessorFn: (row) => new Date(row.date).getTime(),
         cell: ({ row }) => {
-          const value = row.original.date; // păstrăm valoarea originală pentru afișare
+          const value = row.original.date;
           const date = new Date(value);
           return !isNaN(date.getTime()) ? <div>{format(date, 'dd-MM-yyyy HH:mm')}</div> : <div>Invalid date</div>;
         },
@@ -188,7 +194,7 @@ export default function TableComponent() {
     },
     initialState: {
       pagination: {
-        pageSize: 10,
+        pageSize: 20,
       },
     },
   })
