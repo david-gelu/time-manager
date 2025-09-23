@@ -127,7 +127,7 @@ export default function AddNewTask() {
             </div>
           </div>
 
-          <DialogFooter className="flex justify-between">
+          <DialogFooter className="flex justify-between mt-4">
             <Button
               className="bg-teal-400"
               type="submit"

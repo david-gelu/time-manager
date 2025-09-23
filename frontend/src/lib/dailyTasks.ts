@@ -56,7 +56,26 @@ export async function updateDailyTask(taskId: string, taskData: DailyTasks) {
 
   if (!res.ok) {
     const json = await res.json().catch(() => null);
-    throw new Error(json?.error || "Failed to create sub task");
+    throw new Error(json?.error || "Failed to edit task");
+  }
+  return res.json();
+}
+
+export async function deleteDailyTask(taskId: string) {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error("No user logged in");
+  const res = await fetch("/api/daily-tasks/delete-task", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ taskId }),
+  });
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    throw new Error(json?.error || "Failed to delete task");
   }
   return res.json();
 }
@@ -96,7 +115,27 @@ export async function updateSubTask(subTaskId: string, taskData: Task) {
 
   if (!res.ok) {
     const json = await res.json().catch(() => null);
-    throw new Error(json?.error || "Failed to create sub task");
+    throw new Error(json?.error || "Failed to edit sub task");
+  }
+
+  return res.json();
+}
+
+export async function deleteSubTask(subTaskId: string) {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error("No user logged in");
+  const res = await fetch("/api/daily-tasks/delete-sub-task", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ subTaskId }),
+  });
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    throw new Error(json?.error || "Failed to delete sub task");
   }
 
   return res.json();

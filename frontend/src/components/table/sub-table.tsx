@@ -7,6 +7,10 @@ import EditTask from '../edit-tasks'
 import { Status, type Task } from '@/types'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Label } from '../ui/label'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { toast } from 'sonner'
+import { deleteSubTask } from '@/lib/dailyTasks'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface SubTableProps<T extends Record<string, any>> {
   data: Task[]
@@ -27,6 +31,7 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
     }
   })
 
+  const queryClient = useQueryClient()
   useEffect(() => {
     try { localStorage.setItem(SUB_TABLE_STORAGE_KEY, JSON.stringify(childColWidths)) } catch { }
   }, [childColWidths])
@@ -120,7 +125,7 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
                 {childColumnsOrdered.map(col => {
                   return (<TableCell key={String(col)} className="px-4 border-r last:border-r-0" style={{ width: `${widths[String(col)] || 20}%`, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {col !== 'status' ? renderCellValue(row, col) :
-                      <Label className={`px-2 py-1 rounded-full text-xs font-medium ${row.status === Status.COMPLETED ? 'bg-green-100 text-green-800' :
+                      <Label className={`px-2 py-1 rounded-full text-xs font-medium justify-center ${row.status === Status.COMPLETED ? 'bg-green-100 text-green-800' :
                         row.status === Status.IN_PROGRESS ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>{renderCellValue(row, col)}</Label>
                     } </TableCell>);
                 })}
@@ -131,7 +136,26 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={() => { setSelectedTask(row); setOpenEditModal(true) }}>
-                        Edit sub task
+                        <Tooltip>
+                          <TooltipTrigger>Edit sub task</TooltipTrigger>
+                          <TooltipContent>
+                            <p>Edit <strong>{row.task_name}</strong> task</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => deleteSubTask((row as any)._id || rowIndex).then(() => {
+                        toast.success(`${row.task_name} task deleted successfully`)
+                        queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
+                      }).catch((err) => {
+                        console.error(`🚀 ~ err:`, err)
+                        toast.error("Failed to delete task")
+                      })}>
+                        <Tooltip>
+                          <TooltipTrigger>Delete sub task</TooltipTrigger>
+                          <TooltipContent>
+                            <p> This will delete <strong>{row.task_name}</strong> sub task.</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

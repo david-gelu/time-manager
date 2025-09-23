@@ -17,7 +17,7 @@ function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Toaster />
+        <Toaster position='top-center' />
         {children}
       </AuthProvider>
     </QueryClientProvider>

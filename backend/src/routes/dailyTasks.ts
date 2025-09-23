@@ -110,6 +110,26 @@ router.post("/edit-task", authMiddleware, async (req: AuthRequest, res) => {
   }
 })
 
+router.post("/delete-task", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" })
+
+    const { taskId } = req.body
+    if (!taskId) {
+      return res.status(400).json({ error: "taskId and taskData are required" })
+    }
+
+    const deletedTask = await DailyTasksModel.deleteOne({ _id: taskId, userId: req.user.uid })
+
+    if (!deletedTask) return res.status(404).json({ error: "Task not found" })
+
+    res.status(200).json('Task deleted successfully')
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Server error" })
+  }
+})
+
 router.post("/add-sub-task", authMiddleware, async (req: AuthRequest, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: "Unauthorized" })
@@ -182,5 +202,38 @@ router.post("/edit-sub-task", authMiddleware, async (req: AuthRequest, res) => {
     res.status(500).json({ error: "Server error" })
   }
 })
+
+router.post("/delete-sub-task", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" })
+
+    const { subTaskId } = req.body
+    if (!subTaskId) {
+      return res.status(400).json({ error: "subTaskId is required" })
+    }
+
+    const parentTask = await DailyTasksModel.findOne({
+      "tasks._id": subTaskId,
+      userId: req.user.uid,
+    })
+
+    if (!parentTask) return res.status(404).json({ error: "Parent task not found" })
+
+    parentTask.tasks = parentTask.tasks.filter(
+      (t: any) => t._id.toString() !== subTaskId
+    )
+
+    parentTask.status = recalcDailyTaskStatus(parentTask)
+
+    await parentTask.save()
+
+    res.status(200).json('Task deleted successfully')
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Server error" })
+  }
+})
+
+
 
 export default router

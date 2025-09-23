@@ -33,6 +33,10 @@ import { format } from 'date-fns'
 import AddSubTask from '../add-sub-task'
 import EditTask from '../edit-tasks'
 import { Label } from '../ui/label'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { deleteDailyTask } from '@/lib/dailyTasks'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function TableComponent() {
   const { data = [], isLoading } = useAllDailyTasks()
@@ -45,7 +49,7 @@ export default function TableComponent() {
   const [openEditModal, setOpenEditModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState<DailyTasks | null>(null)
   const STORAGE_KEY = 'table-column-widths'
-
+  const queryClient = useQueryClient()
 
   const loadSavedWidths = (): Record<string, number> => {
     try {
@@ -112,7 +116,7 @@ export default function TableComponent() {
         enableSorting: true,
         cell: ({ row }) => {
           const status = row.original.status;
-          return <Label className={`px-2 py-1 rounded-full text-xs font-medium ${status === Status.COMPLETED ? 'bg-green-100 text-green-800' :
+          return <Label className={`px-2 py-1 rounded-full text-xs font-medium justify-center ${status === Status.COMPLETED ? 'bg-green-100 text-green-800' :
             status === Status.IN_PROGRESS ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>{status}</Label>
         }
       },
@@ -157,10 +161,34 @@ export default function TableComponent() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenModal(true) }}>
-                Add sub task
+                <Tooltip>
+                  <TooltipTrigger> Add sub task</TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add new sub task for <strong>{row.original.name}</strong></p>
+                  </TooltipContent>
+                </Tooltip>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenEditModal(true) }}>
-                Edit daily task
+                <Tooltip>
+                  <TooltipTrigger>Edit daily task</TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit <strong>{row.original.name}</strong> task</p>
+                  </TooltipContent>
+                </Tooltip>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => deleteDailyTask(row.original._id).then(() => {
+                toast.success(`${row.original.name} task deleted successfully`)
+                queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
+              }).catch((err) => {
+                console.error(`🚀 ~ err:`, err)
+                toast.error("Failed to delete task")
+              })}>
+                <Tooltip>
+                  <TooltipTrigger>Delete daily task</TooltipTrigger>
+                  <TooltipContent>
+                    <p> This will delete the entire <strong>{row.original.name}</strong> task with sub tasks too</p>
+                  </TooltipContent>
+                </Tooltip>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
