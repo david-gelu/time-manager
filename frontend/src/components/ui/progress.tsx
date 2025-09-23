@@ -30,7 +30,7 @@ function Progress({ className, value, inProgress = 0, ...props }: ProgressProps)
         <div
           className="absolute top-0 h-full bg-destructive transition-all"
           style={{
-            left: completed > 0 ? `calc(${completed}% - 1px)` : '0%', // Doar 1px suprapunere
+            left: completed > 0 ? `calc(${completed}% - 2px)` : '0%', // Doar 1px suprapunere
             width: completed > 0 ? `calc(${progress}% + 1px)` : `${progress}%`, // Doar 1px extensie
             borderRadius: completed > 0 ? '0 9999px 9999px 0' : '9999px', // Colțuri selective
             zIndex: 3
