@@ -1,5 +1,5 @@
 import { auth } from "@/lib/firebase";
-import type { DailyTasks, Task } from "@/types";
+import type { DailyTasks, Status, Task } from "@/types";
 
 
 export async function getAllDailyTasks(): Promise<DailyTasks[]> {
@@ -135,6 +135,25 @@ export async function updateSubTask(subTaskId: string, taskData: Task) {
   if (!res.ok) {
     const json = await res.json().catch(() => null);
     throw new Error(json?.error || "Failed to edit sub task");
+  }
+
+  return res.json();
+}
+export async function updateSubTaskStatus(subTaskId: string, newStatus: Status) {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error("No user logged in");
+  const res = await fetch("/api/daily-tasks/update-sub-task-status", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ subTaskId, newStatus }),
+  });
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    throw new Error(json?.error || "Failed to update sub task status");
   }
 
   return res.json();

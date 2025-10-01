@@ -1,29 +1,38 @@
 import { useState, type MouseEvent } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { MoveHorizontal, MoreHorizontal, Settings2 } from 'lucide-react'
+import { MoveHorizontal, Settings2, MoreHorizontal } from 'lucide-react'
 import { Button } from '../ui/button'
 import { format } from 'date-fns'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from 'sonner'
-import { deleteSubTask } from '@/lib/dailyTasks'
+import { deleteSubTask, updateSubTaskStatus } from '@/lib/dailyTasks'
 import { useQueryClient } from '@tanstack/react-query'
 import { Status, type Task } from '@/types'
 import EditTask from '../edit-tasks'
 import { useColumnWidths } from '@/contexts/ColumnWidthContext'
 import { Badge } from '../ui/badge'
 import useTabAlertForTasks from '@/hooks/useTableAlert'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 
 interface SubTableProps<T extends Record<string, any>> {
   data: Task[]
   parentId: string
 }
 
+const statuses = [
+  { value: Status.NEW, label: Status.NEW },
+  { value: Status.IN_PROGRESS, label: Status.IN_PROGRESS },
+  { value: Status.COMPLETED, label: Status.COMPLETED }
+]
+
 export default function SubTable<T extends Record<string, any>>({ data }: SubTableProps<T>) {
   const queryClient = useQueryClient()
   const { widths, setWidths } = useColumnWidths()
   const [openEditModal, setOpenEditModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+
+  const [statusValue, setStatusValue] = useState<Record<string | number, string>>({})
 
   const allColumns: (keyof Task)[] = data.length > 0 ?
     (Object.keys(data[0]).filter(k => k !== "_id") as (keyof Task)[]) :
@@ -44,9 +53,7 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
         setWidths(prev => {
           const newWidths = { ...prev }
           const currentWidth = startWidths[columnId] || 12
-          const newCurrentWidth = Math.max(2, currentWidth + diffRem)
-          newWidths[columnId] = newCurrentWidth
-
+          newWidths[columnId] = Math.max(2, currentWidth + diffRem)
           if (index < childColumnsOrdered.length - 1) {
             const nextCol = childColumnsOrdered[index + 1]
             const nextWidth = startWidths[nextCol] || 12
@@ -68,21 +75,16 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
 
   const getRowColorClass = (row: Task) => {
     if (!row.start_date || !row.end_date) return ''
-
     const startDate = new Date(row.start_date)
     const endDate = new Date(row.end_date)
-
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return ''
-
     const totalDuration = endDate.getTime() - startDate.getTime()
     const now = new Date().getTime()
     const timeElapsed = now - startDate.getTime()
     const percentageElapsed = (timeElapsed / totalDuration) * 100
-
     if (percentageElapsed >= 90) return 'shadow-[inset_4px_0_0_0_var(--destructive)]'
     if (percentageElapsed >= 75) return 'shadow-[inset_4px_0_0_0_var(--secondary)]'
     if (percentageElapsed < 75) return 'shadow-[inset_4px_0_0_0_var(--primary)]'
-
     return ''
   }
 
@@ -100,7 +102,7 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
     <div className="bg-muted/30 p-2 border-t">
       <div className="overflow-x-auto max-h-auto">
         <Table className="w-full text-sm round">
-          <TableHeader className='border-b bg-muted/50 '>
+          <TableHeader className='border-b bg-muted/50'>
             <TableRow>
               {childColumnsOrdered.map((col, idx) => (
                 <TableHead
@@ -123,63 +125,91 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((row, rowIndex) => (
-              <TableRow key={(row as any)._id || rowIndex} className={`hover:bg-muted/30 ${getRowColorClass(row)}`}>
-                {childColumnsOrdered.map(col => (
-                  <TableCell
-                    key={String(col)}
-                    className="px-4 border-r last:border-r-0"
-                    style={{
-                      width: `${widths[col] || 12}rem`,
-                      wordWrap: 'break-word',
-                      whiteSpace: 'normal',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    {col !== 'status' ? renderCellValue(row, col) :
-                      <Badge
-                        variant={row.status === Status.COMPLETED ? 'secondary' : row.status === Status.IN_PROGRESS ? 'default' : 'destructive'}
-                        className={`w-full capitalize`}
-                      >{renderCellValue(row, col)}</Badge>
-                    }
+            {data.map((row, rowIndex) => {
+              const rowKey = (row as any)._id || rowIndex
+              return (
+                <TableRow key={rowKey} className={`hover:bg-muted/30 ${getRowColorClass(row)}`}>
+                  {childColumnsOrdered.map(col => (
+                    <TableCell
+                      key={String(col)}
+                      className="px-4 border-r last:border-r-0"
+                      style={{
+                        width: `${widths[col] || 12}rem`,
+                        wordWrap: 'break-word',
+                        whiteSpace: 'normal',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {col !== 'status' ? renderCellValue(row, col) :
+                        <Badge
+                          variant={row.status === Status.COMPLETED ? 'secondary' : row.status === Status.IN_PROGRESS ? 'default' : 'destructive'}
+                          className={`w-full capitalize`}
+                        >
+                          {renderCellValue(row, col)}
+                        </Badge>
+                      }
+                    </TableCell>
+                  ))}
+
+                  <TableCell className="px-4 border-r last:border-r-0 flex flex-col gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-6 w-6 p-0"><MoreHorizontal /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <Select
+                          value={statusValue[rowKey] || row.status}
+                          onValueChange={async (val: string) => {
+                            setStatusValue(prev => ({ ...prev, [rowKey]: val }))
+                            await updateSubTaskStatus((row as any)._id || rowIndex, val as Status)
+                            queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
+                          }}
+                        >
+                          <SelectTrigger className="w-full cursor-pointer capitalize">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              {statuses.map(status => (
+                                <SelectItem key={status.value} value={status.value} className='capitalize'>
+                                  {status.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <Tooltip>
+                          <DropdownMenuItem onClick={() => { setSelectedTask(row); setOpenEditModal(true) }}>
+                            <TooltipTrigger>Edit sub task</TooltipTrigger>
+                          </DropdownMenuItem>
+                          <TooltipContent className='cursor-pointer'>
+                            Edit <strong>{row.task_name}</strong> task
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <DropdownMenuItem onClick={() => deleteSubTask((row as any)._id || rowIndex).then(() => {
+                            toast.success(`${row.task_name} task deleted successfully`)
+                            queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
+                          }).catch(err => {
+                            console.error(err)
+                            toast.error("Failed to delete task")
+                          })}>
+                            <TooltipTrigger>Delete sub task</TooltipTrigger>
+                          </DropdownMenuItem>
+                          <TooltipContent className='cursor-pointer'>
+                            This will delete <strong>{row.task_name}</strong> sub task.
+                          </TooltipContent>
+                        </Tooltip>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
-                ))}
-                <TableCell className="px-4 border-r last:border-r-0">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-6 w-6 p-0"><MoreHorizontal /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <Tooltip>
-                        <DropdownMenuItem onClick={() => { setSelectedTask(row); setOpenEditModal(true) }}>
-                          <TooltipTrigger>Edit sub task</TooltipTrigger>
-                        </DropdownMenuItem>
-                        <TooltipContent className='cursor-pointer'>
-                          Edit <strong>{row.task_name}</strong> task
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <DropdownMenuItem onClick={() => deleteSubTask((row as any)._id || rowIndex).then(() => {
-                          toast.success(`${row.task_name} task deleted successfully`)
-                          queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
-                        }).catch(err => {
-                          console.error(err)
-                          toast.error("Failed to delete task")
-                        })}>
-                          <TooltipTrigger>Delete sub task</TooltipTrigger>
-                        </DropdownMenuItem>
-                        <TooltipContent className='cursor-pointer'>
-                          This will delete <strong>{row.task_name}</strong> sub task.
-                        </TooltipContent>
-                      </Tooltip>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </div>
+
       {openEditModal && <EditTask open={openEditModal} onOpenChange={setOpenEditModal} subTask={selectedTask as Task} />}
     </div>
   )

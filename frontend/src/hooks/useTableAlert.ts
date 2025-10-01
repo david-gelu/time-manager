@@ -33,15 +33,21 @@ const useTabAlertForTasks = (tasks: Task[]) => {
 
   const normalFavicon = "/vite.svg"
   const alertFavicon = "/favicon-alert.ico"
-  const now = Date.now()
+
   const hasUrgent = tasks.some(task => {
     if (!task.start_date || !task.end_date || task.status === Status.COMPLETED) return false
+
     const startDate = new Date(task.start_date).getTime()
     const endDate = new Date(task.end_date).getTime()
     if (isNaN(startDate) || isNaN(endDate) || endDate <= startDate) return false
+
+    const now = Date.now()
+    if (now < startDate || now > endDate) return false
+
     const total = endDate - startDate
     const elapsed = now - startDate
     const percentage = (elapsed / total) * 100
+
     return percentage >= 90
   })
 

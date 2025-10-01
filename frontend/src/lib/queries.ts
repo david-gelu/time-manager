@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { getAllDailyTasks, createDailyTask, createSubTask, updateDailyTask, updateSubTask, deleteDailyTask, deleteSubTask, duplicateDailyTask } from './dailyTasks';
-import type { DailyTasks, Task } from '@/types';
+import { getAllDailyTasks, createDailyTask, createSubTask, updateDailyTask, updateSubTask, deleteDailyTask, deleteSubTask, duplicateDailyTask, updateSubTaskStatus } from './dailyTasks';
+import type { DailyTasks, Status, Task } from '@/types';
 
 export function useAllDailyTasks() {
   return useQuery({
@@ -74,6 +74,16 @@ export function useEditSubTask() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ subTaskId, subTask }: { subTaskId: string, subTask: Task }) => updateSubTask(subTaskId, subTask),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] });
+    },
+  });
+}
+
+export function useUpdateSubTaskStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ subTaskId, newStatus }: { subTaskId: string, newStatus: Status }) => updateSubTaskStatus(subTaskId, newStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] });
     },
