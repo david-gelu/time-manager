@@ -12,6 +12,7 @@ import { Status, type Task } from '@/types'
 import EditTask from '../edit-tasks'
 import { useColumnWidths } from '@/contexts/ColumnWidthContext'
 import { Badge } from '../ui/badge'
+import useTabAlertForTasks from '@/hooks/useTableAlert'
 
 interface SubTableProps<T extends Record<string, any>> {
   data: Task[]
@@ -92,6 +93,8 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
     }
     return row[col]
   }
+
+  useTabAlertForTasks(data)
 
   return (
     <div className="bg-muted/30 p-2 border-t">
