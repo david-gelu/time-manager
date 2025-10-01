@@ -11,11 +11,13 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme
   setTheme: (theme: Theme) => void
+  toggleTheme: () => void
 }
 
 const initialState: ThemeProviderState = {
   theme: "system",
   setTheme: () => null,
+  toggleTheme: () => null,
 }
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
@@ -24,7 +26,6 @@ export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "vite-ui-theme",
-  ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
@@ -36,18 +37,15 @@ export function ThemeProvider({
       : "light"
   }
 
-  useEffect(() => {
-    const root = window.document.documentElement
+  const applyTheme = (themeToApply: "light" | "dark") => {
+    const root = document.documentElement
     root.classList.remove("light", "dark")
-
-    const currentTheme = theme === "system" ? getSystemTheme() : theme
-    root.classList.add(currentTheme)
+    root.classList.add(themeToApply)
 
     const id = "primereact-theme"
     const existingLink = document.getElementById(id) as HTMLLinkElement | null
-
     const themeHref =
-      currentTheme === "dark"
+      themeToApply === "dark"
         ? "https://unpkg.com/primereact/resources/themes/lara-dark-indigo/theme.css"
         : "https://unpkg.com/primereact/resources/themes/lara-light-indigo/theme.css"
 
@@ -60,18 +58,51 @@ export function ThemeProvider({
       link.href = themeHref
       document.head.appendChild(link)
     }
+  }
+
+  useEffect(() => {
+    const currentTheme = theme === "system" ? getSystemTheme() : theme
+    applyTheme(currentTheme)
   }, [theme])
 
-  const value = {
+  const handleSetTheme = (newTheme: Theme) => {
+
+    const applyNext = () => {
+      localStorage.setItem(storageKey, newTheme)
+      setTheme(newTheme)
+    }
+
+    if (document.startViewTransition) {
+      document.startViewTransition(() => applyNext())
+    } else {
+      applyNext()
+    }
+  }
+
+  const toggleTheme = () => {
+    const currentResolved = theme === "system" ? getSystemTheme() : theme
+    const next = currentResolved === "dark" ? "light" : "dark"
+
+    const applyNext = () => {
+      localStorage.setItem(storageKey, next)
+      setTheme(next)
+    }
+
+    if (document.startViewTransition) {
+      document.startViewTransition(() => applyNext())
+    } else {
+      applyNext()
+    }
+  }
+
+  const value: ThemeProviderState = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
-    },
+    setTheme: handleSetTheme,
+    toggleTheme,
   }
 
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <ThemeProviderContext.Provider value={value}>
       {children}
     </ThemeProviderContext.Provider>
   )
@@ -79,9 +110,6 @@ export function ThemeProvider({
 
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext)
-
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider")
-
+  if (!context) throw new Error("useTheme must be used within ThemeProvider")
   return context
 }

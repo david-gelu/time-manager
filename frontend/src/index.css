@@ -165,8 +165,34 @@
   }
 }
 
+::view-transition-old(root) {
+  animation: circle-out 500ms forwards;
+}
+::view-transition-new(root) {
+  animation: circle-in 500ms forwards;
+  background-color: red !important;
+}
+
+@keyframes circle-in {
+  from {
+    clip-path: circle(0% at 50% 0%);
+  }
+  to {
+    clip-path: circle(120% at 50% 0%);
+  }
+}
+
+@keyframes circle-out {
+  from {
+    clip-path: circle(120% at 50% 0%);
+  }
+  to {
+    clip-path: circle(0% at 50% 0%);
+  }
+}
 body {
   overflow: hidden;
+  position: relative;
 }
 
 .p-datepicker .p-datepicker-header {
