@@ -28,11 +28,11 @@ function Progress({ className, value, inProgress = 0, ...props }: ProgressProps)
       )}
       {progress > 0 && (
         <div
-          className="absolute top-0 h-full bg-destructive transition-all"
+          className="absolute top-0 h-full bg-chart-1 transition-all"
           style={{
-            left: completed > 0 ? `calc(${completed}% - 2px)` : '0%', // Doar 1px suprapunere
-            width: completed > 0 ? `calc(${progress}% + 1px)` : `${progress}%`, // Doar 1px extensie
-            borderRadius: completed > 0 ? '0 9999px 9999px 0' : '9999px', // Colțuri selective
+            left: completed > 0 ? `calc(${completed}% - 2px)` : '0%',
+            width: completed > 0 ? `calc(${progress}% + 1px)` : `${progress}%`,
+            borderRadius: completed > 0 ? '0 9999px 9999px 0' : '9999px',
             zIndex: 3
           }}
         />

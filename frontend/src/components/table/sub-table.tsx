@@ -4,7 +4,6 @@ import { MoveHorizontal, MoreHorizontal, Settings2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { format } from 'date-fns'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
-import { Label } from '../ui/label'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from 'sonner'
 import { deleteSubTask } from '@/lib/dailyTasks'
@@ -19,9 +18,8 @@ interface SubTableProps<T extends Record<string, any>> {
   parentId: string
 }
 
-export default function SubTable<T extends Record<string, any>>({ data, parentId }: SubTableProps<T>) {
+export default function SubTable<T extends Record<string, any>>({ data }: SubTableProps<T>) {
   const queryClient = useQueryClient()
-  // Nu mai folosim parentId pentru widths - toate subtabelele vor avea aceleași dimensiuni
   const { widths, setWidths } = useColumnWidths()
   const [openEditModal, setOpenEditModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
@@ -41,23 +39,18 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
 
       const handleMouseMove = (e: globalThis.MouseEvent) => {
         const diff = e.clientX - startX
-        // Convertim direct din pixeli la rem folosind root font-size (16px default)
-        const diffRem = diff / 16 // 1rem = 16px
-
+        const diffRem = diff / 16
         setWidths(prev => {
           const newWidths = { ...prev }
-
-          const currentWidth = startWidths[columnId] || 12 // Default width 12rem
+          const currentWidth = startWidths[columnId] || 12
           const newCurrentWidth = Math.max(2, currentWidth + diffRem)
           newWidths[columnId] = newCurrentWidth
 
-          // Ajustăm următoarea coloană dacă nu e ultima
           if (index < childColumnsOrdered.length - 1) {
             const nextCol = childColumnsOrdered[index + 1]
             const nextWidth = startWidths[nextCol] || 12
             newWidths[nextCol] = Math.max(2, nextWidth - diffRem)
           }
-
           return newWidths
         })
       }
@@ -70,6 +63,26 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('mouseup', handleMouseUp)
     }
+  }
+
+  const getRowColorClass = (row: Task) => {
+    if (!row.start_date || !row.end_date) return ''
+
+    const startDate = new Date(row.start_date)
+    const endDate = new Date(row.end_date)
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return ''
+
+    const totalDuration = endDate.getTime() - startDate.getTime()
+    const now = new Date().getTime()
+    const timeElapsed = now - startDate.getTime()
+    const percentageElapsed = (timeElapsed / totalDuration) * 100
+
+    if (percentageElapsed >= 90) return 'shadow-[inset_4px_0_0_0_var(--destructive)]'
+    if (percentageElapsed >= 75) return 'shadow-[inset_4px_0_0_0_var(--secondary)]'
+    if (percentageElapsed < 75) return 'shadow-[inset_4px_0_0_0_var(--primary)]'
+
+    return ''
   }
 
   const renderCellValue = (row: Task, col: keyof Task) => {
@@ -108,7 +121,7 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
           </TableHeader>
           <TableBody>
             {data.map((row, rowIndex) => (
-              <TableRow key={(row as any)._id || rowIndex} className="border-b hover:bg-muted/30">
+              <TableRow key={(row as any)._id || rowIndex} className={`hover:bg-muted/30 ${getRowColorClass(row)}`}>
                 {childColumnsOrdered.map(col => (
                   <TableCell
                     key={String(col)}
@@ -134,28 +147,28 @@ export default function SubTable<T extends Record<string, any>>({ data, parentId
                       <Button variant="ghost" className="h-6 w-6 p-0"><MoreHorizontal /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => { setSelectedTask(row); setOpenEditModal(true) }}>
-                        <Tooltip>
+                      <Tooltip>
+                        <DropdownMenuItem onClick={() => { setSelectedTask(row); setOpenEditModal(true) }}>
                           <TooltipTrigger>Edit sub task</TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit <strong>{row.task_name}</strong> task</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => deleteSubTask((row as any)._id || rowIndex).then(() => {
-                        toast.success(`${row.task_name} task deleted successfully`)
-                        queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
-                      }).catch(err => {
-                        console.error(err)
-                        toast.error("Failed to delete task")
-                      })}>
-                        <Tooltip>
+                        </DropdownMenuItem>
+                        <TooltipContent className='cursor-pointer'>
+                          Edit <strong>{row.task_name}</strong> task
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <DropdownMenuItem onClick={() => deleteSubTask((row as any)._id || rowIndex).then(() => {
+                          toast.success(`${row.task_name} task deleted successfully`)
+                          queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
+                        }).catch(err => {
+                          console.error(err)
+                          toast.error("Failed to delete task")
+                        })}>
                           <TooltipTrigger>Delete sub task</TooltipTrigger>
-                          <TooltipContent>
-                            <p>This will delete <strong>{row.task_name}</strong> sub task.</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </DropdownMenuItem>
+                        </DropdownMenuItem>
+                        <TooltipContent className='cursor-pointer'>
+                          This will delete <strong>{row.task_name}</strong> sub task.
+                        </TooltipContent>
+                      </Tooltip>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

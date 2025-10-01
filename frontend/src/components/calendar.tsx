@@ -8,7 +8,17 @@ import { type AllHTMLAttributes } from "react";
 import { normalizeCalendarValue } from "@/lib/utils";
 
 export type CalendarValue = Nullable<Date | Date[] | (Date | null)[]>;
-
+interface CalendarDayContext {
+  date: Date;
+  day: number;
+  month: number;
+  year: number;
+  today: boolean;
+  selected: boolean;
+  selectable: boolean;
+  inRange?: boolean;
+  disabled?: boolean;
+}
 interface CalendarProps {
   value?: CalendarValue;
   onChange?: (value: CalendarValue) => void;
@@ -71,7 +81,7 @@ export default function Calendar({
       <DialogTrigger asChild>
         <Button variant="outline">{formatDateLabel(value, selectionMode)}</Button>
       </DialogTrigger>
-      <DialogContent className="z-[99999] w-full max-w-full sm:max-w-[85vw] md:max-w-[70vw] lg:max-w-[40vw]">
+      <DialogContent className="z-[99999] w-full max-w-full sm:max-w-[85vw] md:max-w-[70vw] lg:max-w-[40vw] gap-1">
         <DialogHeader>
           <DialogTitle>Calendar</DialogTitle>
           <DialogDescription>{desc && desc}</DialogDescription>
@@ -85,7 +95,28 @@ export default function Calendar({
           hourFormat="24"
           selectionMode={selectionMode}
           pt={{
-            day: { className: ({ context }: { context: AllHTMLAttributes<HTMLDivElement> }) => `${context.selected ? "bg-blue-500 rounded-md" : ""} p-1` },
+            day: ({ context }: { context: CalendarDayContext }) => ({
+              className: `
+              ${context.inRange && !context.selected ? "!bg-secondary/10" : ""}
+              ${context.selected ? "!bg-secondary !text-secondary-foreground !rounded-md" : ""} 
+              p-1
+            `,
+              style: {
+                ...(context.today && !context.selected && {
+                  color: 'hsl(var(--primary-foreground))',
+                  borderRadius: '0.375rem',
+                  fontWeight: 'bold'
+                }),
+                ...(context.selected && {
+                  backgroundColor: 'hsl(var(--secondary))',
+                  color: 'hsl(var(--secondary-foreground))',
+                  borderRadius: '0.375rem'
+                }),
+                ...(context.inRange && !context.selected && {
+                  backgroundColor: 'hsl(var(--secondary) / 0.1)'
+                })
+              }
+            })
           }}
         />
         <div className="text-muted-foreground">

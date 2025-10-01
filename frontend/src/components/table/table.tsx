@@ -163,50 +163,52 @@ export default function TableComponent() {
               <Button variant="ghost" className="h-6 w-6 p-0"><MoreHorizontal /></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenModal(true) }}>
-                <Tooltip>
+              <Tooltip>
+                <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenModal(true) }}>
                   <TooltipTrigger> Add sub task</TooltipTrigger>
-                  <TooltipContent>
-                    <p>Add new sub task for <strong>{row.original.name}.</strong></p>
-                  </TooltipContent>
-                </Tooltip>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenEditModal(true) }}>
-                <Tooltip>
-                  <TooltipTrigger>Edit daily task</TooltipTrigger>
-                  <TooltipContent>
-                    <p>Edit <strong>{row.original.name}</strong> task.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => duplicateDailyTask(row.original).then(() => {
-                toast.success(`${row.original.name} task was duplicated successfully`)
-                queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
-              }).catch((err) => {
-                console.error(`🚀 ~ err:`, err)
-                toast.error("Failed to duplicate task")
-              })}>
-                <Tooltip>
+                </DropdownMenuItem>
+                <TooltipContent className='cursor-pointer'>
+                  Add new sub task for <strong>{row.original.name}.</strong>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger>
+                  <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenEditModal(true) }} >
+                    Edit daily task
+                  </DropdownMenuItem>
+                </TooltipTrigger>
+                <TooltipContent className='cursor-pointer'>
+                  Edit <strong>{row.original.name}</strong> task.
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <DropdownMenuItem onClick={() => duplicateDailyTask(row.original).then(() => {
+                  toast.success(`${row.original.name} task was duplicated successfully`)
+                  queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
+                }).catch((err) => {
+                  console.error(`🚀 ~ err:`, err)
+                  toast.error("Failed to duplicate task")
+                })}>
                   <TooltipTrigger>Duplicate daily task</TooltipTrigger>
-                  <TooltipContent>
-                    <p> This will duplicate the entire <strong>{row.original.name}</strong> task with sub tasks too.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => deleteDailyTask(row.original._id).then(() => {
-                toast.success(`${row.original.name} task deleted successfully`)
-                queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
-              }).catch((err) => {
-                console.error(`🚀 ~ err:`, err)
-                toast.error("Failed to delete task")
-              })}>
-                <Tooltip>
+                </DropdownMenuItem>
+                <TooltipContent className='cursor-pointer'>
+                  This will duplicate the entire <strong>{row.original.name}</strong> task with sub tasks too.
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <DropdownMenuItem onClick={() => deleteDailyTask(row.original._id).then(() => {
+                  toast.success(`${row.original.name} task deleted successfully`)
+                  queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
+                }).catch((err) => {
+                  console.error(`🚀 ~ err:`, err)
+                  toast.error("Failed to delete task")
+                })}>
                   <TooltipTrigger>Delete daily task</TooltipTrigger>
-                  <TooltipContent>
-                    <p> This will delete the entire <strong>{row.original.name}</strong> task with sub tasks too.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </DropdownMenuItem>
+                </DropdownMenuItem>
+                <TooltipContent className='cursor-pointer'>
+                  This will delete the entire <strong>{row.original.name}</strong> task with sub tasks too.
+                </TooltipContent>
+              </Tooltip>
             </DropdownMenuContent>
           </DropdownMenu>
         )
