@@ -1,6 +1,6 @@
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation, keepPreviousData } from '@tanstack/react-query';
 import { getAllDailyTasks, createDailyTask, createSubTask, updateDailyTask, updateSubTask, deleteDailyTask, deleteSubTask, duplicateDailyTask, updateSubTaskStatus } from './dailyTasks';
-import type { DailyTasks, Status, Task } from '@/types';
+import type { DailyTasks, Status, SubTaskWithParent, Task } from '@/types';
 import { getAllTasksWithStatusCompleted, getAllTasksWithStatusInProgress, getAllTasksWithStatusNew } from './sub-tasks';
 
 export function useAllDailyTasks() {
@@ -104,24 +104,27 @@ export function useDeleteSubTask() {
 
 
 // kanbarn board queries
-export function useAllTasksWithStatusNew() {
-  return useQuery({
-    queryKey: ['allTasksWithStatusNew'],
-    queryFn: getAllTasksWithStatusNew,
+
+export const useAllTasksWithStatusNew = (search: string = "") =>
+  useQuery<SubTaskWithParent[], Error>({
+    queryKey: ['allTasksWithStatusNew', search],
+    queryFn: () => getAllTasksWithStatusNew(search),
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60,
   });
-}
-export function useAllTasksWithStatusInProgress() {
-  return useQuery({
-    queryKey: ['allTasksWithStatusInProgress'],
-    queryFn: getAllTasksWithStatusInProgress,
+
+export const useAllTasksWithStatusInProgress = (search: string = "") =>
+  useQuery<SubTaskWithParent[], Error>({
+    queryKey: ['allTasksWithStatusInProgress', search],
+    queryFn: () => getAllTasksWithStatusInProgress(search),
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60,
   });
-}
-export function useAllTasksWithStatusCompleted() {
-  return useQuery({
-    queryKey: ['allTasksWithStatusCompleted'],
-    queryFn: getAllTasksWithStatusCompleted,
+
+export const useAllTasksWithStatusCompleted = (search: string = "") =>
+  useQuery<SubTaskWithParent[], Error>({
+    queryKey: ['allTasksWithStatusCompleted', search],
+    queryFn: () => getAllTasksWithStatusCompleted(search),
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60,
   });
-}

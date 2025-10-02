@@ -1,15 +1,13 @@
 import type { SubTaskWithParent } from "@/types";
 import { auth } from "./firebase";
 
-export async function getAllTasksWithStatusNew(): Promise<SubTaskWithParent[]> {
+export async function getAllTasksWithStatusNew(search: string = ""): Promise<SubTaskWithParent[]> {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error("No user logged in");
 
-  const res = await fetch("/api/sub-tasks/all-status-new", {
+  const res = await fetch(`/api/sub-tasks/all-status-new?search=${encodeURIComponent(search)}`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!res.ok) {
@@ -20,15 +18,13 @@ export async function getAllTasksWithStatusNew(): Promise<SubTaskWithParent[]> {
   return res.json() || [];
 }
 
-export async function getAllTasksWithStatusInProgress(): Promise<SubTaskWithParent[]> {
+export async function getAllTasksWithStatusInProgress(search: string = ""): Promise<SubTaskWithParent[]> {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error("No user logged in");
 
-  const res = await fetch("/api/sub-tasks/all-status-in-progress", {
+  const res = await fetch(`/api/sub-tasks/all-status-in-progress?search=${encodeURIComponent(search)}`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!res.ok) {
@@ -39,15 +35,13 @@ export async function getAllTasksWithStatusInProgress(): Promise<SubTaskWithPare
   return res.json() || [];
 }
 
-export async function getAllTasksWithStatusCompleted(): Promise<SubTaskWithParent[]> {
+export async function getAllTasksWithStatusCompleted(search: string = ""): Promise<SubTaskWithParent[]> {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error("No user logged in");
 
-  const res = await fetch("/api/sub-tasks/all-status-completed", {
+  const res = await fetch(`/api/sub-tasks/all-status-completed?search=${encodeURIComponent(search)}`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!res.ok) {

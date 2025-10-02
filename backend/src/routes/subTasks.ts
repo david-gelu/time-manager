@@ -1,4 +1,3 @@
-
 import { Router } from "express"
 import { AuthRequest } from "../middleware/authMiddleware"
 import { DailyTasksModel } from "../models"
@@ -15,9 +14,20 @@ router.get("/all-status-new", async (req: AuthRequest, res) => {
   }
 
   try {
+    const search = (req.query.search as string) || ""
+
+    const matchStage: any = {
+      "tasks.status": Status.NEW,
+      userId: req.user.uid
+    }
+
+    if (search) {
+      matchStage["tasks.task_name"] = { $regex: search, $options: "i" }
+    }
+
     const tasks: SubTaskWithParent[] = await DailyTasksModel.aggregate([
       { $unwind: "$tasks" },
-      { $match: { "tasks.status": Status.NEW, userId: req.user.uid } },
+      { $match: matchStage },
       {
         $project: {
           _id: "$tasks._id",
@@ -45,9 +55,20 @@ router.get("/all-status-in-progress", async (req: AuthRequest, res) => {
   }
 
   try {
+    const search = (req.query.search as string) || ""
+
+    const matchStage: any = {
+      "tasks.status": Status.IN_PROGRESS,
+      userId: req.user.uid
+    }
+
+    if (search) {
+      matchStage["tasks.task_name"] = { $regex: search, $options: "i" }
+    }
+
     const tasks: SubTaskWithParent[] = await DailyTasksModel.aggregate([
       { $unwind: "$tasks" },
-      { $match: { "tasks.status": Status.IN_PROGRESS, userId: req.user.uid } },
+      { $match: matchStage },
       {
         $project: {
           _id: "$tasks._id",
@@ -75,9 +96,20 @@ router.get("/all-status-completed", async (req: AuthRequest, res) => {
   }
 
   try {
+    const search = (req.query.search as string) || ""
+
+    const matchStage: any = {
+      "tasks.status": Status.COMPLETED,
+      userId: req.user.uid
+    }
+
+    if (search) {
+      matchStage["tasks.task_name"] = { $regex: search, $options: "i" }
+    }
+
     const tasks: SubTaskWithParent[] = await DailyTasksModel.aggregate([
       { $unwind: "$tasks" },
-      { $match: { "tasks.status": Status.COMPLETED, userId: req.user.uid } },
+      { $match: matchStage },
       {
         $project: {
           _id: "$tasks._id",
@@ -98,6 +130,5 @@ router.get("/all-status-completed", async (req: AuthRequest, res) => {
     })
   }
 })
-
 
 export default router
