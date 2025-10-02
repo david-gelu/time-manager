@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { getAllDailyTasks, createDailyTask, createSubTask, updateDailyTask, updateSubTask, deleteDailyTask, deleteSubTask, duplicateDailyTask, updateSubTaskStatus } from './dailyTasks';
 import type { DailyTasks, Status, Task } from '@/types';
+import { getAllTasksWithStatusCompleted, getAllTasksWithStatusInProgress, getAllTasksWithStatusNew } from './sub-tasks';
 
 export function useAllDailyTasks() {
   return useQuery({
@@ -97,5 +98,30 @@ export function useDeleteSubTask() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] });
     },
+  });
+}
+
+
+
+// kanbarn board queries
+export function useAllTasksWithStatusNew() {
+  return useQuery({
+    queryKey: ['allTasksWithStatusNew'],
+    queryFn: getAllTasksWithStatusNew,
+    staleTime: 1000 * 60,
+  });
+}
+export function useAllTasksWithStatusInProgress() {
+  return useQuery({
+    queryKey: ['allTasksWithStatusInProgress'],
+    queryFn: getAllTasksWithStatusInProgress,
+    staleTime: 1000 * 60,
+  });
+}
+export function useAllTasksWithStatusCompleted() {
+  return useQuery({
+    queryKey: ['allTasksWithStatusCompleted'],
+    queryFn: getAllTasksWithStatusCompleted,
+    staleTime: 1000 * 60,
   });
 }

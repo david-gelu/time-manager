@@ -82,10 +82,17 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
     const now = new Date().getTime()
     const timeElapsed = now - startDate.getTime()
     const percentageElapsed = (timeElapsed / totalDuration) * 100
-    if (percentageElapsed >= 90) return 'shadow-[inset_4px_0_0_0_var(--destructive)]'
-    if (percentageElapsed >= 75) return 'shadow-[inset_4px_0_0_0_var(--secondary)]'
-    if (percentageElapsed < 75) return 'shadow-[inset_4px_0_0_0_var(--primary)]'
-    return ''
+    switch (row.status) {
+      case Status.COMPLETED:
+        return 'shadow-[inset_4px_0_0_0_var(--primary)]'
+      case Status.NEW:
+      case Status.IN_PROGRESS:
+        if (percentageElapsed >= 90) return 'shadow-[inset_4px_0_0_0_var(--destructive)]'
+        if (percentageElapsed >= 75) return 'shadow-[inset_4px_0_0_0_var(--secondary)]'
+        return 'shadow-[inset_4px_0_0_0_var(--primary)]'
+      default:
+        return ''
+    }
   }
 
   const renderCellValue = (row: Task, col: keyof Task) => {

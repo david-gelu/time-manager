@@ -286,6 +286,4 @@ router.post("/duplicate-task", authMiddleware, async (req: AuthRequest, res) => 
   }
 })
 
-
-
 export default router

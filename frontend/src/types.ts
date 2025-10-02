@@ -4,7 +4,11 @@ export const Status = {
   COMPLETED: 'completed'
 } as const;
 
-export type Status = (typeof Status)[keyof typeof Status];
+export type Status = (typeof Status)[keyof typeof Status]
+
+export type SubTaskWithParent = Task & {
+  parentName: string
+}
 
 export type Task = {
   _id?: string,

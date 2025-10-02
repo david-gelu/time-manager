@@ -10,6 +10,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import Home from '@/components/pages/home'
 import { UserDashboard } from '@/components/auth/UserDashboard'
 import { auth } from '@/lib/firebase'
+import KanbanBoard from '@/components/pages/kanban-board'
 
 const queryClient = new QueryClient()
 
@@ -71,13 +72,13 @@ export const router = createBrowserRouter([
         path: 'profile',
         element: <ProtectedRoute><UserDashboard /></ProtectedRoute>
       },
+      // {
+      //   path: 'settings',
+      //   element: <ProtectedRoute><div>Settings Page</div></ProtectedRoute>
+      // },
       {
-        path: 'settings',
-        element: <ProtectedRoute><div>Settings Page</div></ProtectedRoute>
-      },
-      {
-        path: 'inbox',
-        element: <ProtectedRoute><div>Inbox Page</div></ProtectedRoute>
+        path: 'kanban',
+        element: <ProtectedRoute><KanbanBoard /></ProtectedRoute>
       }
     ]
   }

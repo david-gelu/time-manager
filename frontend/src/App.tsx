@@ -27,7 +27,7 @@ import {
 } from "./components/ui/breadcrumb"
 
 import Calendar, { type CalendarValue } from "./components/calendar"
-import { Home, Inbox, ChevronRight, FileText, Settings } from "lucide-react"
+import { Home, Kanban, ChevronRight, FileText, Settings } from "lucide-react"
 import { Outlet, Link, useLocation } from "react-router"
 import { useState } from "react"
 import {
@@ -51,13 +51,13 @@ export default function App() {
       icon: Home,
       children: [
         { title: "Test", url: "/test", icon: FileText },
-        { title: "Settings", url: "/settings", icon: Settings }
+        // { title: "Settings", url: "/settings", icon: Settings }
       ]
     },
     {
-      title: "Inbox",
-      url: "/inbox",
-      icon: Inbox,
+      title: "Kanban Bord",
+      url: "/kanban",
+      icon: Kanban,
       children: []
     },
   ]
