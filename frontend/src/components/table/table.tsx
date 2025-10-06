@@ -32,7 +32,6 @@ import { useAllDailyTasks } from '@/lib/queries'
 import { format } from 'date-fns'
 import AddSubTask from '../add-sub-task'
 import EditTask from '../edit-tasks'
-import { Label } from '../ui/label'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { deleteDailyTask, duplicateDailyTask } from '@/lib/dailyTasks'
 import { toast } from 'sonner'
@@ -86,18 +85,21 @@ export default function TableComponent() {
 
     const expanderCol: ColumnDef<DailyTasks> = {
       id: "expander",
-      header: () => <div className="w-fit"></div>,
+      header: () => <div className="w-[0rem]"></div>,
       cell: ({ row }) => {
         const task = row.original;
-        if (!task.tasks?.length) return <div className="w-fit"></div>;
+        if (!task.tasks?.length) return <div className="w-auto"></div>;
         return (
-          <Button variant="ghost" className="h-6 w-fit p-0" onClick={() => toggleRowExpansion(task._id)}>
-            {expandedRows.has(task._id) ? <ChevronDown className="h-4 w-fit" /> : <ChevronRight className="h-4 w-fit" />}
+          <Button variant={`${expandedRows.has(task._id) ? 'default' : 'secondary'}`} className="h-6 w-full p-0" onClick={() => toggleRowExpansion(task._id)}>
+            {expandedRows.has(task._id) ? <ChevronDown className="h-4 w-auto" /> : <ChevronRight className="h-4 w-auto" />}
           </Button>
         );
       },
       enableSorting: false,
       enableHiding: false,
+      size: 50,
+      minSize: 50,
+      maxSize: 50,
     };
 
     const columns: ColumnDef<DailyTasks>[] = [
@@ -148,7 +150,7 @@ export default function TableComponent() {
           return (
             <div className="flex flex-col gap-1">
               <Progress value={tasksDone} inProgress={tasksProgress} />
-              <span className="text-xs text-muted-foreground">{done} task are done and {inProgress} in progress from {total}</span>
+              <span className="text-xs text-foreground">{done} task are done and {inProgress} in progress from {total}</span>
             </div>
           );
         }
@@ -157,6 +159,9 @@ export default function TableComponent() {
         id: "actions",
         header: () => <div className="w-fit"></div>,
         enableHiding: false,
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
         cell: ({ row }: any) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -352,10 +357,14 @@ export default function TableComponent() {
                   <TableHead
                     key={header.id}
                     className="relative border-r last:border-r-0 text-left align-top py-2 group cursor-pointer select-none"
-                    style={{ width: `${colWidths[header.id] || 9}rem` }}
+                    style={{
+                      width: header.id === 'expander' || header.id === 'actions'
+                        ? `${header.getSize()}px`
+                        : `${colWidths[header.id] || 5}rem`
+                    }}
                     onClick={header.column.getToggleSortingHandler()}
                   >
-                    <div className="mx-3 flex items-center gap-1">
+                    <div className="mx-1 flex items-center gap-1">
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
@@ -367,13 +376,15 @@ export default function TableComponent() {
                         }[header.column.getIsSorted() as string] ?? null}
                       </span>
                     </div>
-
-                    {index < headerGroup.headers.length - 1 && (
-                      <MoveHorizontal
-                        className="absolute z-10 right-0 top-1/3 translate-x-1/2 -translate-y-1/2 h-4 w-5 bg-border cursor-col-resize hover:bg-primary transition-colors rounded opacity-0 group-hover:opacity-100"
-                        onMouseDown={handleMouseResize(header.id, index)}
-                      />
-                    )}
+                    {index < headerGroup.headers.length - 1 &&
+                      header.id !== 'expander' &&
+                      header.id !== 'progress' &&
+                      header.id !== 'actions' && (
+                        <MoveHorizontal
+                          className="absolute z-10 right-0 top-1/3 translate-x-1/2 -translate-y-1/2 h-4 w-5 bg-border cursor-col-resize hover:bg-primary transition-colors rounded opacity-0 group-hover:opacity-100"
+                          onMouseDown={handleMouseResize(header.id, index)}
+                        />
+                      )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -394,7 +405,7 @@ export default function TableComponent() {
                         <TableCell
                           className="py-0 border-r last:border-r-0"
                           key={cell.id}
-                          style={{ width: `${colWidths[cell.column.id] || 9}rem` }}
+                          style={{ width: `${colWidths[cell.column.id] || 5}rem` }}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
@@ -435,10 +446,7 @@ export default function TableComponent() {
               </TableRow>
             )}
           </TableBody>
-
-
         </Table>
-
         <div className="flex items-center mt-auto justify-between p-4 bg-muted/50 border-t">
           <Button
             className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
@@ -447,7 +455,7 @@ export default function TableComponent() {
           >
             <ChevronsLeft /> Anterior
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-foreground">
             Pagina{' '}
             <strong>
               {table.getState().pagination.pageIndex + 1} din {table.getPageCount()}

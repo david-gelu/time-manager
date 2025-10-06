@@ -81,7 +81,7 @@ export default function Calendar({
       <DialogTrigger asChild>
         <Button variant="outline">{formatDateLabel(value, selectionMode)}</Button>
       </DialogTrigger>
-      <DialogContent className="z-[99999] w-full max-w-full sm:max-w-[85vw] md:max-w-[70vw] lg:max-w-[40vw] gap-1">
+      <DialogContent className="z-[99999] w-full max-w-full gap-1">
         <DialogHeader>
           <DialogTitle>Calendar</DialogTitle>
           <DialogDescription>{desc && desc}</DialogDescription>

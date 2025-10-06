@@ -72,11 +72,11 @@ export function NavUser() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild >
             <Button
               variant='ghost'
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground !px-0"
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={userData.avatar} alt={userData.name} />

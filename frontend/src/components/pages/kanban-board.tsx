@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from "@/components/ui/resizable";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Status, type SubTaskWithParent } from "@/types";
+import { Status, type Task } from "@/types";
 import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 import { format } from "date-fns";
@@ -14,6 +14,8 @@ import {
 } from "@/lib/queries";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "../ui/input";
+import EditTask from "../edit-tasks";
+import { Button } from "../ui/button";
 
 const statuses = [
   { value: Status.NEW, label: Status.NEW },
@@ -24,6 +26,8 @@ const statuses = [
 export default function KanbanBoard() {
   const queryClient = useQueryClient();
   const [statusValue, setStatusValue] = useState<Record<string, string>>({});
+  const [openEditModal, setOpenEditModal] = useState(false)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
 
   const [searchNew, setSearchNew] = useState("");
   const [searchInProgress, setSearchInProgress] = useState("");
@@ -37,81 +41,203 @@ export default function KanbanBoard() {
   const { data: statusInProgress = [] } = useAllTasksWithStatusInProgress(debouncedSearchInProgress);
   const { data: statusCompleted = [] } = useAllTasksWithStatusCompleted(debouncedSearchCompleted);
 
-  const renderTaskPanel = (tasks: SubTaskWithParent[], status: Status, search: string, setSearch: (val: string) => void) => (
-    <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusNew'] })
+    queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusInProgress'] })
+    queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusCompleted'] })
+  }, [openEditModal])
 
-      <div className="sticky top-0 bg-background w-full rounded shadow p-2 z-10">
-        <div className="flex flex-wrap gap-2 justify-between items-center">
-          <span className="font-semibold text-center capitalize min-w-[150px]">Status: {status}</span>
-          <Input
-            type="text"
-            placeholder="Search..."
-            className="p-1 border rounded flex-1 max-w-[20rem]"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {tasks.map(task => (
-        <div key={task._id} className="flex flex-col gap-2 border p-2 rounded shadow">
-          <Badge variant="secondary" className="whitespace-normal break-words max-w-full">{task.parentName}</Badge>
-          <span>{task.task_name}</span>
-          <Separator orientation="horizontal" />
-          <Select
-            value={statusValue[task._id as string] || task.status}
-            onValueChange={async val => {
-              setStatusValue(prev => ({ ...prev, [task._id as string]: val }));
-              await updateSubTaskStatus(task._id as string, val as Status);
-              queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusNew'] });
-              queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusInProgress'] });
-              queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusCompleted'] });
-            }}
-          >
-            <SelectTrigger className="w-full cursor-pointer capitalize">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {statuses.map(s => (
-                  <SelectItem key={s.value} value={s.value} className="capitalize">
-                    {s.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <Separator orientation="horizontal" />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <div className="flex flex-col">
-              <span>Start: {format(task.start_date, 'dd-MM-yyyy')}</span>
-              <span>{format(task.start_date, 'HH:mm')}</span>
-            </div>
-            <div className="flex flex-col">
-              <span>End: {format(task.end_date, 'dd-MM-yyyy')}</span>
-              <span>{format(task.end_date, 'HH:mm')}</span>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
   return (
     <div className="w-full p-4 space-y-4">
-      <ResizablePanelGroup direction="horizontal" className="min-h-[15rem] max-h-[88dvh] rounded-lg border">
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="min-h-[15rem] max-h-[90dvh] rounded-lg border"
+      >
         <ResizablePanel defaultSize={33.34}>
-          {renderTaskPanel(statusNew, Status.NEW, searchNew, setSearchNew)}
+          <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
+            <div className="sticky top-0 bg-background w-full rounded shadow p-2 z-10">
+              <div className="flex flex-wrap gap-2 justify-between items-center">
+                <span className="font-semibold text-center capitalize min-w-[150px]">Status: {Status.NEW}</span>
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  className="p-1 border rounded flex-1 min-w-[120px]"
+                  value={searchNew}
+                  onChange={e => setSearchNew(e.target.value)}
+                />
+              </div>
+            </div>
+            {statusNew.map((task) =>
+              <div className="flex flex-col gap-2 border p-2 rounded shadow" key={task._id}>
+                <Badge variant='default'> {task.parentName}</Badge>
+                <div className="flex justify-between flex-wrap gap-2">
+                  <span>{task.task_name}</span>
+                  <Button size="sm" variant="outline" onClick={() => { setSelectedTask(task); setOpenEditModal(true) }}>Edit</Button>
+                </div>
+                <Separator orientation="horizontal" />
+                <Select
+                  value={statusValue[task._id as string] || task.status}
+                  onValueChange={async (val: string) => {
+                    setStatusValue(prev => ({ ...prev, [task._id as string]: val }))
+                    await updateSubTaskStatus(task._id as string, val as Status)
+                    queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusNew'] })
+                    if (val === Status.IN_PROGRESS) queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusInProgress'] })
+                    else queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusCompleted'] })
+                  }}
+                >
+                  <SelectTrigger className="w-full cursor-pointer capitalize">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {statuses.map(status => (
+                        <SelectItem key={status.value} value={status.value} className="capitalize">
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <Separator orientation="horizontal" />
+                <div className="flex justify-between">
+                  <div className="flex flex-col text-xs">
+                    <span>Start: {format(task.start_date, 'dd-MM-yyyy')}</span>
+                    <span className="ml-[5ch]">{format(task.start_date, 'HH:mm')}</span>
+                  </div>
+                  <div className="flex flex-col text-xs">
+                    <span>End: {format(task.end_date, 'dd-MM-yyyy')}</span>
+                    <span className="ml-[4ch]">{format(task.end_date, 'HH:mm')}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={33.33}>
-          {renderTaskPanel(statusInProgress, Status.IN_PROGRESS, searchInProgress, setSearchInProgress)}
+          <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
+            <div className="sticky top-0 bg-background w-full rounded shadow p-2 z-10">
+              <div className="flex flex-wrap gap-2 justify-between items-center">
+                <span className="font-semibold text-center capitalize min-w-[150px]">Status: {Status.IN_PROGRESS}</span>
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  className="p-1 border rounded flex-1 min-w-[120px]"
+                  value={searchInProgress}
+                  onChange={e => setSearchInProgress(e.target.value)}
+                />
+              </div>
+            </div>
+            {statusInProgress.map((task) =>
+              <div className="flex flex-col gap-2 border p-2 rounded shadow" key={task._id}>
+                <Badge variant='default'> {task.parentName}</Badge>
+                <div className="flex justify-between flex-wrap gap-2">
+                  <span>{task.task_name}</span>
+                  <Button size="sm" variant="outline" onClick={() => { setSelectedTask(task); setOpenEditModal(true) }}>Edit</Button>
+                </div>
+                <Separator orientation="horizontal" />
+                <Select
+                  value={statusValue[task._id as string] || task.status}
+                  onValueChange={async (val: string) => {
+                    setStatusValue(prev => ({ ...prev, [task._id as string]: val }))
+                    await updateSubTaskStatus(task._id as string, val as Status)
+                    queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusInProgress'] })
+                    if (val === Status.NEW) queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusNew'] })
+                    else queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusCompleted'] })
+                  }}
+                >
+                  <SelectTrigger className="w-full cursor-pointer capitalize">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {statuses.map(status => (
+                        <SelectItem key={status.value} value={status.value} className="capitalize">
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <Separator orientation="horizontal" />
+                <div className="flex justify-between">
+                  <div className="flex flex-col text-xs">
+                    <span>Start: {format(task.start_date, 'dd-MM-yyyy')}</span>
+                    <span className="ml-[5ch]">{format(task.start_date, 'HH:mm')}</span>
+                  </div>
+                  <div className="flex flex-col text-xs">
+                    <span>End: {format(task.end_date, 'dd-MM-yyyy')}</span>
+                    <span className="ml-[4ch]">{format(task.end_date, 'HH:mm')}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={33.33}>
-          {renderTaskPanel(statusCompleted, Status.COMPLETED, searchCompleted, setSearchCompleted)}
+          <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
+            <div className="sticky top-0 bg-background w-full rounded shadow p-2 z-10">
+              <div className="flex flex-wrap gap-2 justify-between items-center">
+                <span className="font-semibold text-center capitalize min-w-[150px]">Status: {Status.COMPLETED}</span>
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  className="p-1 border rounded flex-1 min-w-[120px]"
+                  value={searchCompleted}
+                  onChange={e => setSearchCompleted(e.target.value)}
+                />
+              </div>
+            </div>
+            {statusCompleted.map((task) =>
+              <div className="flex flex-col gap-2 border p-2 rounded shadow" key={task._id}>
+                <Badge variant='default'> {task.parentName}</Badge>
+                <div className="flex justify-between flex-wrap gap-2">
+                  <span>{task.task_name}</span>
+                  <Button size="sm" variant="outline" onClick={() => { setSelectedTask(task); setOpenEditModal(true) }}>Edit</Button>
+                </div>
+                <Separator orientation="horizontal" />
+                <Select
+                  value={statusValue[task._id as string] || task.status}
+                  onValueChange={async (val: string) => {
+                    setStatusValue(prev => ({ ...prev, [task._id as string]: val }))
+                    await updateSubTaskStatus(task._id as string, val as Status)
+                    queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusCompleted'] })
+                    if (val === Status.IN_PROGRESS) queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusInProgress'] })
+                    else queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusNew'] })
+                  }}
+                >
+                  <SelectTrigger className="w-full cursor-pointer capitalize">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {statuses.map(status => (
+                        <SelectItem key={status.value} value={status.value} className="capitalize">
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <Separator orientation="horizontal" />
+                <div className="flex justify-between">
+                  <div className="flex flex-col text-xs">
+                    <span>Start: {format(task.start_date, 'dd-MM-yyyy')}</span>
+                    <span className="ml-[5ch]">{format(task.start_date, 'HH:mm')}</span>
+                  </div>
+                  <div className="flex flex-col text-xs">
+                    <span>End: {format(task.end_date, 'dd-MM-yyyy')}</span>
+                    <span className="ml-[4ch]">{format(task.end_date, 'HH:mm')}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
+      {openEditModal && <EditTask open={openEditModal} onOpenChange={setOpenEditModal} subTask={selectedTask as Task} />}
     </div>
   );
 }

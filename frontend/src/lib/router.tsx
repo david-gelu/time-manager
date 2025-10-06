@@ -11,6 +11,7 @@ import Home from '@/components/pages/home'
 import { UserDashboard } from '@/components/auth/UserDashboard'
 import { auth } from '@/lib/firebase'
 import KanbanBoard from '@/components/pages/kanban-board'
+import DailyTasks from '@/components/pages/daily-tasks'
 
 const queryClient = new QueryClient()
 
@@ -65,17 +66,13 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute><Home /></ProtectedRoute>
       },
       {
-        path: 'test',
-        element: <ProtectedRoute><div>Test Page</div></ProtectedRoute>
+        path: 'daily-tasks',
+        element: <ProtectedRoute><DailyTasks /></ProtectedRoute>
       },
       {
         path: 'profile',
         element: <ProtectedRoute><UserDashboard /></ProtectedRoute>
       },
-      // {
-      //   path: 'settings',
-      //   element: <ProtectedRoute><div>Settings Page</div></ProtectedRoute>
-      // },
       {
         path: 'kanban',
         element: <ProtectedRoute><KanbanBoard /></ProtectedRoute>

@@ -234,11 +234,11 @@ body {
 
 .p-timepicker {
   > div {
-    flex-direction: row;
+    flex-direction: row-reverse;
   }
 
   button {
-    rotate: 270deg;
+    rotate: 90deg;
   }
 }
 

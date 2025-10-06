@@ -1,10 +1,7 @@
-import TableComponent from "@/components/table/table"
 
 const Home = () => {
   return (
-    // <div className="flex flex-col items-center justify-center w-full h-full pt-5">
-    <TableComponent />
-    // </div>
+    'aici voi adauga ceva stats si poate grafice'
   )
 }
 

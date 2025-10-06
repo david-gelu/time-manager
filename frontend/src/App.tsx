@@ -27,7 +27,7 @@ import {
 } from "./components/ui/breadcrumb"
 
 import Calendar, { type CalendarValue } from "./components/calendar"
-import { Home, Kanban, ChevronRight, FileText, Settings } from "lucide-react"
+import { Kanban, ChevronRight, Logs, Gauge } from "lucide-react"
 import { Outlet, Link, useLocation } from "react-router"
 import { useState } from "react"
 import {
@@ -46,12 +46,11 @@ export default function App() {
 
   const menuItems = [
     {
-      title: "Home",
+      title: "Dashboard",
       url: "/",
-      icon: Home,
+      icon: Gauge,
       children: [
-        { title: "Test", url: "/test", icon: FileText },
-        // { title: "Settings", url: "/settings", icon: Settings }
+        { title: "Dailys", url: "/daily-tasks", icon: Logs },
       ]
     },
     {
@@ -87,27 +86,28 @@ export default function App() {
       currentPath += `/${segment}`
 
       let title = segment
-      let isParentPage = false
+      let hasChildren = false
 
       for (const menuItem of menuItems) {
-        if (menuItem.url === currentPath) {
+        if (menuItem.url === currentPath && menuItem.children && menuItem.children.length > 0) {
           title = menuItem.title
-          isParentPage = true
+          hasChildren = true
           break
         }
         for (const child of menuItem.children || []) {
           if (child.url === currentPath) {
             title = child.title
+            if (menuItem.children && menuItem.children.length > 0) {
+              hasChildren = true
+            }
             break
           }
         }
       }
 
-      const isLast = i === pathnames.length - 1
+      if (!hasChildren) continue
 
-      if (isParentPage && !isLast && i === 0) {
-        continue
-      }
+      const isLast = i === pathnames.length - 1
 
       if (breadcrumbs.length > 0) {
         breadcrumbs.push(
@@ -151,22 +151,28 @@ export default function App() {
                           {item.children && item.children.length > 0 ? (
                             <div className="w-full">
                               <CollapsibleTrigger asChild>
-                                <SidebarMenuButton
-                                  className={`w-full ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'} `}
-                                >
-                                  <Link
-                                    to={item.url}
-                                    className="w-full flex items-center gap-2 pr-8"
+                                <>
+                                  <SidebarMenuButton
+                                    className={`w-full relative ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'}`}
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      toggleOpen(item.title)
+                                    }}
                                   >
-                                    <item.icon />
-                                    <span>{item.title}</span>
-                                  </Link>
-                                  <ChevronRight className={`ml-auto h-4 w-4 hover:cursor-pointer hover:bg-background transition-transform ${openItems.includes(item.title) && " rotate-90"}`} />
-                                </SidebarMenuButton>
+                                    <Link
+                                      to={item.url}
+                                      className="w-full flex items-center gap-2 pr-8"
+                                    >
+                                      <item.icon />
+                                      <span>{item.title}</span>
+                                    </Link>
+                                  </SidebarMenuButton>
+                                  <ChevronRight className={`absolute right-0 top-1/2 -translate-y-1/2 ml-auto h-4 w-4 hover:cursor-pointer hover:bg-background transition-transform ${openItems.includes(item.title) && "rotate-90 top-1"}`} />
+                                </>
                               </CollapsibleTrigger>
                             </div>
                           ) : (
-                            <SidebarMenuButton asChild className={`w-full ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'} `}>
+                            <SidebarMenuButton asChild className={`w-full ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'}`}>
                               <Link to={item.url}>
                                 <item.icon />
                                 <span>{item.title}</span>
@@ -179,7 +185,7 @@ export default function App() {
                               <SidebarMenuSub>
                                 {item.children.map((child) => (
                                   <SidebarMenuSubItem key={child.title}>
-                                    <SidebarMenuSubButton asChild >
+                                    <SidebarMenuSubButton asChild>
                                       <Link to={child.url}>
                                         <child.icon className="h-4 w-4" />
                                         <span>{child.title}</span>
@@ -211,17 +217,21 @@ export default function App() {
                     <BreadcrumbList>
                       {pathnames.length === 0 ? (
                         <BreadcrumbItem>
-                          <BreadcrumbPage>Home</BreadcrumbPage>
+                          <BreadcrumbPage>Dashboard</BreadcrumbPage>
                         </BreadcrumbItem>
                       ) : (
                         <>
-                          <BreadcrumbItem>
-                            <BreadcrumbLink asChild>
-                              <Link to="/">Home</Link>
-                            </BreadcrumbLink>
-                          </BreadcrumbItem>
-                          <BreadcrumbSeparator className="hidden md:block" />
-                          {generateBreadcrumbs()}
+                          {generateBreadcrumbs().length > 0 && (
+                            <>
+                              <BreadcrumbItem>
+                                <BreadcrumbLink asChild>
+                                  <Link to="/">Dashboard</Link>
+                                </BreadcrumbLink>
+                              </BreadcrumbItem>
+                              <BreadcrumbSeparator className="hidden md:block" />
+                              {generateBreadcrumbs()}
+                            </>
+                          )}
                         </>
                       )}
                     </BreadcrumbList>
