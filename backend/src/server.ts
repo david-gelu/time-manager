@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import dailyTasksRouter from "./routes/dailyTasks";
 import subTasksRouter from "./routes/subTasks";
+import statsRouter from "./routes/stats";
 import { authMiddleware, AuthRequest } from "./middleware/authMiddleware"
 
 dotenv.config()
@@ -61,6 +62,7 @@ connectDB().then(() => {
 
   app.use("/api/daily-tasks", authMiddleware, dailyTasksRouter)
   app.use("/api/sub-tasks", authMiddleware, subTasksRouter)
+  app.use("/api/stats", authMiddleware, statsRouter)
 
   app.use((req, res) => {
     res.status(404).json({ error: `Cannot ${req.method} ${req.url}` });

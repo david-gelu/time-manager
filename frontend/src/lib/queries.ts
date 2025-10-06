@@ -1,7 +1,25 @@
 import { useQuery, useQueryClient, useMutation, keepPreviousData } from '@tanstack/react-query';
-import { getAllDailyTasks, createDailyTask, createSubTask, updateDailyTask, updateSubTask, deleteDailyTask, deleteSubTask, duplicateDailyTask, updateSubTaskStatus } from './dailyTasks';
+import {
+  getAllDailyTasks,
+  createDailyTask,
+  createSubTask,
+  updateDailyTask,
+  updateSubTask,
+  deleteDailyTask,
+  deleteSubTask,
+  duplicateDailyTask,
+  updateSubTaskStatus
+} from './dailyTasks';
 import type { DailyTasks, Status, SubTaskWithParent, Task } from '@/types';
 import { getAllTasksWithStatusCompleted, getAllTasksWithStatusInProgress, getAllTasksWithStatusNew } from './sub-tasks';
+import {
+  countDailysWithStatusCompleted,
+  countDailysWithStatusInProgress,
+  countDailysWithStatusNew,
+  countSubTasksWithStatusCompleted,
+  countSubTasksWithStatusInProgress,
+  countSubTasksWithStatusNew
+} from './stats';
 
 export function useAllDailyTasks() {
   return useQuery({
@@ -126,5 +144,49 @@ export const useAllTasksWithStatusCompleted = (search: string = "") =>
     queryKey: ['allTasksWithStatusCompleted', search],
     queryFn: () => getAllTasksWithStatusCompleted(search),
     placeholderData: keepPreviousData,
+    staleTime: 1000 * 60,
+  });
+
+
+//stats queries
+export const useCountDailysWithStatusNew = () =>
+  useQuery<number, Error>({
+    queryKey: ['countDailysWithStatusNew'],
+    queryFn: () => countDailysWithStatusNew(),
+    staleTime: 1000 * 60,
+  });
+
+export const useCountDailysWithStatusInProgress = () =>
+  useQuery<number, Error>({
+    queryKey: ['countDailysWithStatusInProgress'],
+    queryFn: () => countDailysWithStatusInProgress(),
+    staleTime: 1000 * 60,
+  });
+
+export const useCountDailysWithStatusCompleted = () =>
+  useQuery<number, Error>({
+    queryKey: ['countDailysWithStatusCompleted'],
+    queryFn: () => countDailysWithStatusCompleted(),
+    staleTime: 1000 * 60,
+  });
+
+export const useCountSubTasksWithStatusNew = () =>
+  useQuery<number, Error>({
+    queryKey: ['countSubTasksWithStatusNew'],
+    queryFn: () => countSubTasksWithStatusNew(),
+    staleTime: 1000 * 60,
+  });
+
+export const useCountSubTasksWithStatusInProgress = () =>
+  useQuery<number, Error>({
+    queryKey: ['countSubTasksWithStatusInProgress'],
+    queryFn: () => countSubTasksWithStatusInProgress(),
+    staleTime: 1000 * 60,
+  });
+
+export const useCountSubTasksWithStatusCompleted = () =>
+  useQuery<number, Error>({
+    queryKey: ['countSubTasksWithStatusCompleted'],
+    queryFn: () => countSubTasksWithStatusCompleted(),
     staleTime: 1000 * 60,
   });
