@@ -9,34 +9,48 @@ export function Register() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const { signUp, signInWithGoogle } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (password !== confirmPassword) {
       toast.error("Parolele nu coincid")
       return
     }
+
     if (password.length < 6) {
       toast.error("Parola trebuie să aibă cel puțin 6 caractere")
       return
     }
+
+    setIsLoading(true)
+
     try {
       await signUp(email, password)
-      toast.success("Cont creat cu succes! Te rugăm să te conectezi.")
-      navigate("/auth/login")
+      toast.success("Cont creat cu succes!")
+      navigate("/")
     } catch (err: any) {
       toast.error(err.message || "Nu s-a putut crea contul")
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleGoogleSignIn = async () => {
+    setIsLoading(true)
     try {
       await signInWithGoogle()
+      toast.success("Autentificare cu Google reușită!")
+      navigate('/')
     } catch (err: any) {
-      console.error("Google sign in error:", err)
-      toast.error("Autentificarea cu Google a eșuat")
+      if (err.message) {
+        toast.error(err.message)
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -48,13 +62,38 @@ export function Register() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <Input type="password" placeholder="Parolă" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-          <Input type="password" placeholder="Confirmă parola" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} />
-          <Button type="submit" className="w-full">Crează cont</Button>
+          <Input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={isLoading}
+          />
+          <Input
+            type="password"
+            placeholder="Parolă"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            disabled={isLoading}
+          />
+          <Input
+            type="password"
+            placeholder="Confirmă parola"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={6}
+            disabled={isLoading}
+          />
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Se creează..." : "Crează cont"}
+          </Button>
         </form>
 
-        {/* <div className="relative my-4">
+        <div className="relative my-4">
           <span className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </span>
@@ -63,9 +102,15 @@ export function Register() {
           </span>
         </div>
 
-        <Button type="button" variant="outline" className="w-full" onClick={handleGoogleSignIn}>
-          Continuă cu Google
-        </Button> */}
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+        >
+          {isLoading ? "Se autentifică..." : "Continuă cu Google"}
+        </Button>
 
         <p className="text-center text-sm">
           Ai deja un cont? <Link to="/auth/login" className="text-primary hover:underline">Conectează-te</Link>

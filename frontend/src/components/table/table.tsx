@@ -320,157 +320,167 @@ export default function TableComponent() {
 
   return (
     <div className="px-4 w-full mx-auto">
-      <div className="flex items-center justify-end py-1 gap-2">
-        <Input
-          type="text"
-          placeholder="Search..."
-          value={globalFilter ?? ''}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
-          className="max-w-[200px]"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline"><Columns className="mr-2 h-4 w-4" />Columns</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Vizibilitate coloane</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {table.getAllColumns().filter(c => c.getCanHide()).map(c => (
-              <DropdownMenuCheckboxItem
-                key={c.id}
-                checked={c.getIsVisible()}
-                onCheckedChange={v => c.toggleVisibility(!!v)}
-              >
-                {c.id}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <div className="rounded-lg border shadow-sm overflow-hidden">
-        <Table className="w-full border-collapse text-sm h-full">
-          <TableHeader className="sticky top-0 z-10 bg-background">
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id} className="capitalize border-b">
-                {headerGroup.headers.map((header, index) => (
-                  <TableHead
-                    key={header.id}
-                    className="relative border-r last:border-r-0 text-left align-top py-2 group cursor-pointer select-none"
-                    style={{
-                      width: header.id === 'expander' || header.id === 'actions'
-                        ? `${header.getSize()}px`
-                        : `${colWidths[header.id] || 5}rem`
-                    }}
-                    onClick={header.column.getToggleSortingHandler()}
-                  >
-                    <div className="mx-1 flex items-center gap-1">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-
-                      <span className="ml-1 transition-opacity duration-200">
-                        {{
-                          asc: <ChevronUp className="h-3 w-3" />,
-                          desc: <ChevronDown className="h-3 w-3" />
-                        }[header.column.getIsSorted() as string] ?? null}
-                      </span>
-                    </div>
-                    {index < headerGroup.headers.length - 1 &&
-                      header.id !== 'expander' &&
-                      header.id !== 'progress' &&
-                      header.id !== 'actions' && (
-                        <MoveHorizontal
-                          className="absolute z-10 right-0 top-1/3 translate-x-1/2 -translate-y-1/2 h-4 w-5 bg-border cursor-col-resize hover:bg-primary transition-colors rounded opacity-0 group-hover:opacity-100"
-                          onMouseDown={handleMouseResize(header.id, index)}
-                        />
-                      )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => {
-                const task = row.original
-                const isExpanded = expandedRows.has(task._id)
-
-                return (
-                  <Fragment key={row.id}>
-                    {/* Tabel principal row */}
-                    <TableRow className="border-b hover:bg-muted/30">
-                      {row.getVisibleCells().map(cell => (
-                        <TableCell
-                          className="py-0 border-r last:border-r-0"
-                          key={cell.id}
-                          style={{ width: `${colWidths[cell.column.id] || 5}rem` }}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-
-                    {/* Subtable cu motion */}
-                    <TableRow>
-                      <TableCell colSpan={visibleColumns.length} className="p-0">
-                        <AnimatePresence initial={false}>
-                          {isExpanded && task.tasks?.length > 0 && (
-                            <motion.div
-                              key="subtable"
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.3 }}
-                              style={{ overflow: "hidden" }}
-                            >
-                              <SubTable data={task.tasks} parentId={task._id} />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </TableCell>
-                    </TableRow>
-                  </Fragment>
-                )
-              })
-            ) : (
-              <TableRow className="w-full flex flex-col items-center h-[60vh]">
-                <TableCell
-                  colSpan={visibleColumns.length}
-                  className="p-8 text-center w-full flex flex-col items-center gap-2 text-xl absolute left-[0%] top-[25%] -translate-50%"
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="flex items-center justify-end py-1 gap-2">
+          <Input
+            type="text"
+            placeholder="Search..."
+            value={globalFilter ?? ''}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
+            className="max-w-[200px]"
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline"><Columns className="mr-2 h-4 w-4" />Columns</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Vizibilitate coloane</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {table.getAllColumns().filter(c => c.getCanHide()).map(c => (
+                <DropdownMenuCheckboxItem
+                  key={c.id}
+                  checked={c.getIsVisible()}
+                  onCheckedChange={v => c.toggleVisibility(!!v)}
                 >
-                  <TableCellsMerge className="h-20 w-full" />
-                  Nu s-au găsit rezultate.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        <div className="flex items-center mt-auto justify-between p-4 bg-muted/50 border-t">
-          <Button
-            className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            <ChevronsLeft /> Anterior
-          </Button>
-          <span className="text-sm text-foreground">
-            Pagina{' '}
-            <strong>
-              {table.getState().pagination.pageIndex + 1} din {table.getPageCount()}
-            </strong>{' '}
-            | {table.getFilteredRowModel().rows.length} rezultate totale
-          </span>
-          <Button
-            className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Următorul <ChevronsRight />
-          </Button>
+                  {c.id}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </div>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="rounded-lg border shadow-sm overflow-hidden">
+          <Table className="w-full border-collapse text-sm h-full">
+            <TableHeader className="sticky top-0 z-10 bg-background">
+              {table.getHeaderGroups().map(headerGroup => (
+                <TableRow key={headerGroup.id} className="capitalize border-b">
+                  {headerGroup.headers.map((header, index) => (
+                    <TableHead
+                      key={header.id}
+                      className="relative border-r last:border-r-0 text-left align-top py-2 group cursor-pointer select-none"
+                      style={{
+                        width: header.id === 'expander' || header.id === 'actions'
+                          ? `${header.getSize()}px`
+                          : `${colWidths[header.id] || 5}rem`
+                      }}
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      <div className="mx-1 flex items-center gap-1">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+
+                        <span className="ml-1 transition-opacity duration-200">
+                          {{
+                            asc: <ChevronUp className="h-3 w-3" />,
+                            desc: <ChevronDown className="h-3 w-3" />
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </span>
+                      </div>
+                      {index < headerGroup.headers.length - 1 &&
+                        header.id !== 'expander' &&
+                        header.id !== 'progress' &&
+                        header.id !== 'actions' && (
+                          <MoveHorizontal
+                            className="absolute z-10 right-0 top-1/3 translate-x-1/2 -translate-y-1/2 h-4 w-5 bg-border cursor-col-resize hover:bg-primary transition-colors rounded opacity-0 group-hover:opacity-100"
+                            onMouseDown={handleMouseResize(header.id, index)}
+                          />
+                        )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => {
+                  const task = row.original
+                  const isExpanded = expandedRows.has(task._id)
+
+                  return (
+                    <Fragment key={row.id}>
+                      {/* Tabel principal row */}
+                      <TableRow className="border-b hover:bg-muted/30">
+                        {row.getVisibleCells().map(cell => (
+                          <TableCell
+                            className="py-0 border-r last:border-r-0"
+                            key={cell.id}
+                            style={{ width: `${colWidths[cell.column.id] || 5}rem` }}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+
+                      {/* Subtable cu motion */}
+                      <TableRow>
+                        <TableCell colSpan={visibleColumns.length} className="p-0">
+                          <AnimatePresence initial={false}>
+                            {isExpanded && task.tasks?.length > 0 && (
+                              <motion.div
+                                key="subtable"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                style={{ overflow: "hidden" }}
+                              >
+                                <SubTable data={task.tasks} parentId={task._id} />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </TableCell>
+                      </TableRow>
+                    </Fragment>
+                  )
+                })
+              ) : (
+                <TableRow className="w-full flex flex-col items-center h-[60vh]">
+                  <TableCell
+                    colSpan={visibleColumns.length}
+                    className="p-8 text-center w-full flex flex-col items-center gap-2 text-xl absolute left-[0%] top-[25%] -translate-50%"
+                  >
+                    <TableCellsMerge className="h-20 w-full" />
+                    Nu s-au găsit rezultate.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          <div className="flex items-center mt-auto justify-between p-4 bg-muted/50 border-t">
+            <Button
+              className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <ChevronsLeft /> Anterior
+            </Button>
+            <span className="text-sm text-foreground">
+              Pagina{' '}
+              <strong>
+                {table.getState().pagination.pageIndex + 1} din {table.getPageCount()}
+              </strong>{' '}
+              | {table.getFilteredRowModel().rows.length} rezultate totale
+            </span>
+            <Button
+              className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Următorul <ChevronsRight />
+            </Button>
+          </div>
+        </div></motion.div>
       {openModal && <AddSubTask
         open={openModal}
         onOpenChange={setOpenModal}

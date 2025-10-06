@@ -1,8 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import {
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -12,7 +11,6 @@ import {
   type User
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { toast } from 'sonner'
 
 interface AuthContextType {
   user: User | null
@@ -33,55 +31,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth)
-        if (result && result.user) {
-          setUser(result.user)
-          toast.success('Autentificare reușită cu Google')
-          localStorage.setItem('user', JSON.stringify(result.user))
-        }
-      } catch (error: any) {
-        console.error('Redirect result error:', error)
-        toast.error('Autentificarea cu Google a eșuat')
-      } finally {
-        setLoading(false)
-      }
-    }
-    handleRedirectResult()
-  }, [])
-
-  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
       setLoading(false)
-      if (currentUser) {
-        localStorage.setItem('user', JSON.stringify(currentUser))
-      } else {
-        localStorage.removeItem('user')
-      }
     })
     return () => unsubscribe()
   }, [])
 
   const signUp = async (email: string, password: string) => {
     try {
-      return await createUserWithEmailAndPassword(auth, email, password)
+      const result = await createUserWithEmailAndPassword(auth, email, password)
+      return result
     } catch (error: any) {
       console.error('Signup error:', error.code, error.message)
-      toast.error(error.message)
-      throw error
+
+      let errorMessage = 'Nu s-a putut crea contul'
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Acest email este deja folosit'
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Email invalid'
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Parola este prea slabă'
+      }
+
+      throw new Error(errorMessage)
     }
   }
 
   const signIn = async (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password)
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password)
+      return result
+    } catch (error: any) {
+      console.error('Sign in error:', error.code, error.message)
+
+      let errorMessage = 'Autentificare eșuată'
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        errorMessage = 'Email sau parolă incorectă'
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Email invalid'
+      } else if (error.code === 'auth/user-disabled') {
+        errorMessage = 'Acest cont a fost dezactivat'
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMessage = 'Email sau parolă incorectă'
+      }
+
+      throw new Error(errorMessage)
+    }
+  }
+
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider()
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      })
+
+      const result = await signInWithPopup(auth, provider)
+
+      if (result.user) {
+        setUser(result.user)
+      }
+    } catch (error: any) {
+      console.error('Google sign in error:', error.code, error.message)
+
+      let errorMessage = 'Autentificarea cu Google a eșuat'
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Fereastră închisă. Te rugăm să încerci din nou.'
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Pop-up blocat de browser. Te rugăm să permiți pop-up-urile.'
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        return
+      }
+
+      throw new Error(errorMessage)
+    }
   }
 
   const logout = async () => {
     try {
       await signOut(auth)
-      localStorage.removeItem('user')
     } catch (error) {
       console.error('Logout error:', error)
       throw error
@@ -89,26 +118,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const updateUserEmail = async (newEmail: string) => {
-    if (!auth.currentUser) throw new Error('No user logged in')
+    if (!auth.currentUser) throw new Error('Nu ești autentificat')
     return updateEmail(auth.currentUser, newEmail)
   }
 
   const updateUserPassword = async (newPassword: string) => {
-    if (!auth.currentUser) throw new Error('No user logged in')
+    if (!auth.currentUser) throw new Error('Nu ești autentificat')
     return updatePassword(auth.currentUser, newPassword)
-  }
-
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider()
-    provider.addScope('https://www.googleapis.com/auth/userinfo.email')
-    provider.addScope('https://www.googleapis.com/auth/userinfo.profile')
-
-    try {
-      await signInWithRedirect(auth, provider)
-    } catch (error) {
-      console.error('Google sign in error:', error)
-      throw error
-    }
   }
 
   const getIdToken = async (): Promise<string | null> => {

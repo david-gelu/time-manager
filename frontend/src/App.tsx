@@ -16,6 +16,7 @@ import {
   SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "./components/ui/sidebar"
 import {
   Breadcrumb,
@@ -39,6 +40,12 @@ import { AuthProvider } from './contexts/AuthContext';
 import { NavUser } from "./components/nav-user"
 import AddNewTask from "./components/add-new-task"
 import { ColumnWidthProvider } from "./contexts/ColumnWidthContext"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function App() {
   const [openItems, setOpenItems] = useState<string[]>([])
@@ -49,9 +56,13 @@ export default function App() {
       title: "Dashboard",
       url: "/",
       icon: Gauge,
-      children: [
-        { title: "Dailys", url: "/daily-tasks", icon: Logs },
-      ]
+      children: []
+    },
+    {
+      title: "Dailys",
+      url: "/daily-tasks",
+      icon: Logs,
+      children: []
     },
     {
       title: "Kanban Bord",
@@ -94,15 +105,6 @@ export default function App() {
           hasChildren = true
           break
         }
-        for (const child of menuItem.children || []) {
-          if (child.url === currentPath) {
-            title = child.title
-            if (menuItem.children && menuItem.children.length > 0) {
-              hasChildren = true
-            }
-            break
-          }
-        }
       }
 
       if (!hasChildren) continue
@@ -132,72 +134,35 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <AuthProvider>
         <SidebarProvider>
-          <Sidebar>
+          <Sidebar collapsible="icon">
             <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {menuItems.map((item) => (
-                      <Collapsible
-                        defaultOpen
-                        key={item.title}
-                        open={openItems.includes(item.title)}
-                        onOpenChange={() => toggleOpen(item.title)}
-                      >
-                        <SidebarMenuItem>
-                          {item.children && item.children.length > 0 ? (
-                            <div className="w-full">
-                              <CollapsibleTrigger asChild>
-                                <>
-                                  <SidebarMenuButton
-                                    className={`w-full relative ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'}`}
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      toggleOpen(item.title)
-                                    }}
-                                  >
-                                    <Link
-                                      to={item.url}
-                                      className="w-full flex items-center gap-2 pr-8"
-                                    >
-                                      <item.icon />
-                                      <span>{item.title}</span>
-                                    </Link>
-                                  </SidebarMenuButton>
-                                  <ChevronRight className={`absolute right-0 top-1/2 -translate-y-1/2 ml-auto h-4 w-4 hover:cursor-pointer hover:bg-background transition-transform ${openItems.includes(item.title) && "rotate-90 top-1"}`} />
-                                </>
-                              </CollapsibleTrigger>
-                            </div>
-                          ) : (
-                            <SidebarMenuButton asChild className={`w-full ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'}`}>
-                              <Link to={item.url}>
-                                <item.icon />
-                                <span>{item.title}</span>
-                              </Link>
-                            </SidebarMenuButton>
-                          )}
-
-                          {item.children && item.children.length > 0 && (
-                            <CollapsibleContent>
-                              <SidebarMenuSub>
-                                {item.children.map((child) => (
-                                  <SidebarMenuSubItem key={child.title}>
-                                    <SidebarMenuSubButton asChild>
-                                      <Link to={child.url}>
-                                        <child.icon className="h-4 w-4" />
-                                        <span>{child.title}</span>
-                                      </Link>
-                                    </SidebarMenuSubButton>
-                                  </SidebarMenuSubItem>
-                                ))}
-                              </SidebarMenuSub>
-                            </CollapsibleContent>
-                          )}
-                        </SidebarMenuItem>
-                      </Collapsible>
+                      <SidebarMenuItem key={item.title}>
+                        <TooltipProvider delayDuration={0}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <SidebarMenuButton
+                                asChild
+                                className={`w-full ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'}`}
+                              >
+                                <Link to={item.url}>
+                                  <item.icon />
+                                  <span>{item.title}</span>
+                                </Link>
+                              </SidebarMenuButton>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              {item.title}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </SidebarMenuItem>
                     ))}
                   </SidebarMenu>
                 </SidebarGroupContent>
@@ -250,7 +215,7 @@ export default function App() {
             </SidebarInset>
           </ColumnWidthProvider>
         </SidebarProvider>
-      </ThemeProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }

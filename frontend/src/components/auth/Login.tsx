@@ -8,32 +8,43 @@ import { toast } from "sonner"
 export function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const { signIn, signInWithGoogle, loading, user } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const { signIn, signInWithGoogle, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname || "/"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+
     try {
       await signIn(email, password)
-      toast.success("Autentificare reușită")
+      toast.success("Autentificare reușită!")
       navigate(from)
     } catch (err: any) {
       toast.error(err.message || "Autentificare eșuată")
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleGoogleSignIn = async () => {
+    setIsLoading(true)
     try {
       await signInWithGoogle()
+      toast.success("Autentificare cu Google reușită!")
+      navigate(from)
     } catch (err: any) {
-      console.error("Google sign in error:", err)
-      toast.error("Autentificarea cu Google a eșuat")
+      if (err.message) {
+        toast.error(err.message)
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  if (!loading && user) {
+  if (user) {
     navigate(from)
     return null
   }
@@ -52,6 +63,7 @@ export function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={isLoading}
           />
           <Input
             type="password"
@@ -59,11 +71,14 @@ export function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={isLoading}
           />
-          <Button type="submit" className="w-full">Conectează-te</Button>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Se conectează..." : "Conectează-te"}
+          </Button>
         </form>
 
-        {/* <div className="relative my-4">
+        <div className="relative my-4">
           <span className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </span>
@@ -72,9 +87,15 @@ export function Login() {
           </span>
         </div>
 
-        <Button type="button" variant="outline" className="w-full" onClick={handleGoogleSignIn}>
-          Conectare cu Google
-        </Button> */}
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+        >
+          {isLoading ? "Se autentifică..." : "Conectare cu Google"}
+        </Button>
 
         <p className="text-center text-sm">
           Nu ai cont? <Link to="/auth/register" className="text-primary hover:underline">Creează unul</Link>
