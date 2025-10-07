@@ -17,6 +17,7 @@ import { Input } from "../ui/input";
 import EditTask from "../edit-tasks";
 import { Button } from "../ui/button";
 import { motion } from 'framer-motion'
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const statuses = [
   { value: Status.NEW, label: Status.NEW },
@@ -62,9 +63,9 @@ export default function KanbanBoard() {
         >
           <ResizablePanel defaultSize={33.34}>
             <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
-              <div className="sticky top-0 bg-background w-full rounded shadow p-2 z-10">
+              <div className="sticky top-0 bg-background w-full rounded shadow py-2 z-10">
                 <div className="flex flex-wrap gap-2 justify-between items-center">
-                  <span className="font-semibold text-center capitalize min-w-[150px]">Status: {Status.NEW}</span>
+                  <span className="font-semibold capitalize min-w-[150px]">Status: {Status.NEW}</span>
                   <Input
                     type="text"
                     placeholder="Search..."
@@ -92,9 +93,16 @@ export default function KanbanBoard() {
                       else queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusCompleted'] })
                     }}
                   >
-                    <SelectTrigger className="w-full cursor-pointer capitalize">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
+                    <Tooltip>
+                      <TooltipTrigger className="w-full">
+                        <SelectTrigger className="w-full cursor-pointer capitalize">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side='left' className='cursor-pointer'>
+                        Change status.
+                      </TooltipContent>
+                    </Tooltip>
                     <SelectContent>
                       <SelectGroup>
                         {statuses.map(status => (
@@ -123,9 +131,9 @@ export default function KanbanBoard() {
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={33.33}>
             <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
-              <div className="sticky top-0 bg-background w-full rounded shadow p-2 z-10">
+              <div className="sticky top-0 bg-background w-full rounded shadow py-2 z-10">
                 <div className="flex flex-wrap gap-2 justify-between items-center">
-                  <span className="font-semibold text-center capitalize min-w-[150px]">Status: {Status.IN_PROGRESS}</span>
+                  <span className="font-semibold capitalize min-w-[150px]">Status: {Status.IN_PROGRESS}</span>
                   <Input
                     type="text"
                     placeholder="Search..."
@@ -153,9 +161,16 @@ export default function KanbanBoard() {
                       else queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusCompleted'] })
                     }}
                   >
-                    <SelectTrigger className="w-full cursor-pointer capitalize">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
+                    <Tooltip>
+                      <TooltipTrigger className="w-full">
+                        <SelectTrigger className="w-full cursor-pointer capitalize">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side='left' className='cursor-pointer'>
+                        Change status.
+                      </TooltipContent>
+                    </Tooltip>
                     <SelectContent>
                       <SelectGroup>
                         {statuses.map(status => (
@@ -184,9 +199,9 @@ export default function KanbanBoard() {
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={33.33}>
             <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
-              <div className="sticky top-0 bg-background w-full rounded shadow p-2 z-10">
+              <div className="sticky top-0 bg-background w-full rounded shadow py-2 z-10">
                 <div className="flex flex-wrap gap-2 justify-between items-center">
-                  <span className="font-semibold text-center capitalize min-w-[150px]">Status: {Status.COMPLETED}</span>
+                  <span className="font-semibold capitalize min-w-[150px]">Status: {Status.COMPLETED}</span>
                   <Input
                     type="text"
                     placeholder="Search..."
@@ -214,9 +229,16 @@ export default function KanbanBoard() {
                       else queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusNew'] })
                     }}
                   >
-                    <SelectTrigger className="w-full cursor-pointer capitalize">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
+                    <Tooltip>
+                      <TooltipTrigger className="w-full">
+                        <SelectTrigger className="w-full cursor-pointer capitalize">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side='left' className='cursor-pointer'>
+                        Change status.
+                      </TooltipContent>
+                    </Tooltip>
                     <SelectContent>
                       <SelectGroup>
                         {statuses.map(status => (

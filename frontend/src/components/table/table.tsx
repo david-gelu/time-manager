@@ -149,8 +149,17 @@ export default function TableComponent() {
           const tasksProgress = total ? (inProgress / total) * 100 : 0;
           return (
             <div className="flex flex-col gap-1">
-              <Progress value={tasksDone} inProgress={tasksProgress} />
-              <span className="text-xs text-foreground">{done} task are done and {inProgress} in progress from {total}</span>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Progress value={tasksDone} inProgress={tasksProgress} />
+                </TooltipTrigger>
+                <TooltipContent side='left' className='cursor-pointer'>
+                  {total > 0 ?
+                    <span>Great job! <strong>{done}</strong> tasks completed and <strong>{inProgress}</strong> still in progress — <strong>{total}</strong> total.</span> :
+                    <span>No sub tasks added yet.</span>
+                  }
+                </TooltipContent>
+              </Tooltip>
             </div>
           );
         }
@@ -172,7 +181,7 @@ export default function TableComponent() {
                 <DropdownMenuItem onClick={() => { setSelectedTask(row.original); setOpenModal(true) }}>
                   <TooltipTrigger> Add sub task</TooltipTrigger>
                 </DropdownMenuItem>
-                <TooltipContent className='cursor-pointer'>
+                <TooltipContent side='left' className='cursor-pointer'>
                   Add new sub task for <strong>{row.original.name}.</strong>
                 </TooltipContent>
               </Tooltip>
@@ -182,7 +191,7 @@ export default function TableComponent() {
                     Edit daily task
                   </DropdownMenuItem>
                 </TooltipTrigger>
-                <TooltipContent className='cursor-pointer'>
+                <TooltipContent side='left' className='cursor-pointer'>
                   Edit <strong>{row.original.name}</strong> task.
                 </TooltipContent>
               </Tooltip>
@@ -196,7 +205,7 @@ export default function TableComponent() {
                 })}>
                   <TooltipTrigger>Duplicate daily task</TooltipTrigger>
                 </DropdownMenuItem>
-                <TooltipContent className='cursor-pointer'>
+                <TooltipContent side='left' className='cursor-pointer'>
                   This will duplicate the entire <strong>{row.original.name}</strong> task with sub tasks too.
                 </TooltipContent>
               </Tooltip>
@@ -210,7 +219,7 @@ export default function TableComponent() {
                 })}>
                   <TooltipTrigger>Delete daily task</TooltipTrigger>
                 </DropdownMenuItem>
-                <TooltipContent className='cursor-pointer'>
+                <TooltipContent side='left' className='cursor-pointer'>
                   This will delete the entire <strong>{row.original.name}</strong> task with sub tasks too.
                 </TooltipContent>
               </Tooltip>

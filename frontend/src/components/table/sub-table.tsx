@@ -172,9 +172,16 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
                             queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
                           }}
                         >
-                          <SelectTrigger className="w-full cursor-pointer capitalize">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
+                          <Tooltip>
+                            <TooltipTrigger className="w-full">
+                              <SelectTrigger className="w-full cursor-pointer capitalize">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent side='left' className='cursor-pointer'>
+                              Change status.
+                            </TooltipContent>
+                          </Tooltip>
                           <SelectContent>
                             <SelectGroup>
                               {statuses.map(status => (
@@ -189,7 +196,7 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
                           <DropdownMenuItem onClick={() => { setSelectedTask(row); setOpenEditModal(true) }}>
                             <TooltipTrigger>Edit sub task</TooltipTrigger>
                           </DropdownMenuItem>
-                          <TooltipContent className='cursor-pointer'>
+                          <TooltipContent side='left' className='cursor-pointer'>
                             Edit <strong>{row.task_name}</strong> task
                           </TooltipContent>
                         </Tooltip>
@@ -203,7 +210,7 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
                           })}>
                             <TooltipTrigger>Delete sub task</TooltipTrigger>
                           </DropdownMenuItem>
-                          <TooltipContent className='cursor-pointer'>
+                          <TooltipContent side='left' className='cursor-pointer'>
                             This will delete <strong>{row.task_name}</strong> sub task.
                           </TooltipContent>
                         </Tooltip>
