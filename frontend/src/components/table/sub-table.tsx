@@ -14,6 +14,7 @@ import useTabAlertForTasks from '@/hooks/useTableAlert'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
+import { SubTaskDetails } from '../sub-task-details'
 
 interface SubTableProps<T extends Record<string, any>> {
   data: Task[]
@@ -192,6 +193,21 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
                             </SelectGroup>
                           </SelectContent>
                         </Select>
+                        <Tooltip>
+                          <DropdownMenuItem asChild>
+                            <SubTaskDetails
+                              taskId={row._id as string}
+                              trigger={
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" className="w-full justify-start px-2">  Vizualizează sub task </Button>
+                                </TooltipTrigger>
+                              }
+                            />
+                          </DropdownMenuItem>
+                          <TooltipContent side="left" className="cursor-pointer">
+                            View sub task <strong>{row.task_name}</strong>
+                          </TooltipContent>
+                        </Tooltip>
                         <Tooltip>
                           <DropdownMenuItem onClick={() => { setSelectedTask(row); setOpenEditModal(true) }}>
                             <TooltipTrigger>Edit sub task</TooltipTrigger>

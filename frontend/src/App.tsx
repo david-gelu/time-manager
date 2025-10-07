@@ -40,12 +40,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { NavUser } from "./components/nav-user"
 import AddNewTask from "./components/add-new-task"
 import { ColumnWidthProvider } from "./contexts/ColumnWidthContext"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 
 export default function App() {
   const [openItems, setOpenItems] = useState<string[]>([])
@@ -144,24 +138,16 @@ export default function App() {
                   <SidebarMenu>
                     {menuItems.map((item) => (
                       <SidebarMenuItem key={item.title}>
-                        <TooltipProvider delayDuration={0}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <SidebarMenuButton
-                                asChild
-                                className={`w-full ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'}`}
-                              >
-                                <Link to={item.url}>
-                                  <item.icon />
-                                  <span>{item.title}</span>
-                                </Link>
-                              </SidebarMenuButton>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">
-                              {item.title}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={item.title}
+                          className={`w-full ${isItemActive(item) ? 'font-semibold bg-sidebar-accent' : 'font-normal'}`}
+                        >
+                          <Link to={item.url}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}
                   </SidebarMenu>

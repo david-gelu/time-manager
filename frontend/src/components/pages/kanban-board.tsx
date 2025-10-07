@@ -18,6 +18,7 @@ import EditTask from "../edit-tasks";
 import { Button } from "../ui/button";
 import { motion } from 'framer-motion'
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { SubTaskDetails } from "../sub-task-details";
 
 const statuses = [
   { value: Status.NEW, label: Status.NEW },
@@ -78,9 +79,10 @@ export default function KanbanBoard() {
               {statusNew.map((task) =>
                 <div className="flex flex-col gap-2 border p-2 rounded shadow" key={task._id}>
                   <Badge variant='default'> {task.parentName}</Badge>
-                  <div className="flex justify-between flex-wrap gap-2">
+                  <div className="flex justify-between items-center flex-wrap gap-2">
                     <span>{task.task_name}</span>
                     <Button size="sm" variant="outline" onClick={() => { setSelectedTask(task); setOpenEditModal(true) }}>Edit</Button>
+                    <SubTaskDetails taskId={task._id as string} />
                   </div>
                   <Separator orientation="horizontal" />
                   <Select
@@ -146,9 +148,10 @@ export default function KanbanBoard() {
               {statusInProgress.map((task) =>
                 <div className="flex flex-col gap-2 border p-2 rounded shadow" key={task._id}>
                   <Badge variant='default'> {task.parentName}</Badge>
-                  <div className="flex justify-between flex-wrap gap-2">
+                  <div className="flex justify-between items-center flex-wrap gap-2">
                     <span>{task.task_name}</span>
                     <Button size="sm" variant="outline" onClick={() => { setSelectedTask(task); setOpenEditModal(true) }}>Edit</Button>
+                    <SubTaskDetails taskId={task._id as string} />
                   </div>
                   <Separator orientation="horizontal" />
                   <Select
@@ -214,9 +217,10 @@ export default function KanbanBoard() {
               {statusCompleted.map((task) =>
                 <div className="flex flex-col gap-2 border p-2 rounded shadow" key={task._id}>
                   <Badge variant='default'> {task.parentName}</Badge>
-                  <div className="flex justify-between flex-wrap gap-2">
+                  <div className="flex justify-between items-center flex-wrap gap-2">
                     <span>{task.task_name}</span>
                     <Button size="sm" variant="outline" onClick={() => { setSelectedTask(task); setOpenEditModal(true) }}>Edit</Button>
+                    <SubTaskDetails taskId={task._id as string} />
                   </div>
                   <Separator orientation="horizontal" />
                   <Select

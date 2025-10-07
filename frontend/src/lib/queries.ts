@@ -11,7 +11,12 @@ import {
   updateSubTaskStatus
 } from './dailyTasks';
 import type { DailyTasks, Status, SubTaskWithParent, Task } from '@/types';
-import { getAllTasksWithStatusCompleted, getAllTasksWithStatusInProgress, getAllTasksWithStatusNew } from './sub-tasks';
+import {
+  getAllTasksWithStatusCompleted,
+  getAllTasksWithStatusInProgress,
+  getAllTasksWithStatusNew,
+  getSubTask
+} from './sub-tasks';
 import {
   countDailysWithStatusCompleted,
   countDailysWithStatusInProgress,
@@ -22,7 +27,7 @@ import {
 } from './stats';
 
 export function useAllDailyTasks() {
-  return useQuery({
+  return useQuery<DailyTasks[]>({
     queryKey: ['allDailyTasks'],
     queryFn: getAllDailyTasks,
     staleTime: 1000 * 60,
@@ -122,6 +127,14 @@ export function useDeleteSubTask() {
 
 
 // kanbarn board queries
+
+export function useGetSubTask(taskId: string = "") {
+  return useQuery<Task>({
+    queryKey: ['getSubTask', taskId],
+    queryFn: () => getSubTask(taskId),
+    staleTime: 1000 * 60,
+  });
+}
 
 export const useAllTasksWithStatusNew = (search: string = "") =>
   useQuery<SubTaskWithParent[], Error>({

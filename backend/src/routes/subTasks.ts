@@ -131,4 +131,28 @@ router.get("/all-status-completed", async (req: AuthRequest, res) => {
   }
 })
 
+router.get("/:taskId", async (req: AuthRequest, res) => {
+  const { taskId } = req.params
+  if (!req.user) {
+    return res.status(401).json({ error: "Unauthorized" })
+  }
+
+  try {
+    const result = await DailyTasksModel.findOne(
+      { userId: req.user.uid, 'tasks._id': taskId },
+      { 'tasks.$': 1, _id: 0 }
+    )
+
+    const task: SubTask | null = result?.tasks[0] || null
+
+    return res.json(task ? task : {})
+  } catch (error) {
+    const userName = req.user?.name || req.user?.email || "Unknown"
+    return res.status(500).json({
+      error: `Failed to fetch subtask for user: ${userName}, ${error}`,
+    })
+  }
+})
+
+
 export default router

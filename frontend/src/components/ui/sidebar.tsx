@@ -516,7 +516,6 @@ const SidebarMenuButton = forwardRef<
         {...props}
       />
     )
-
     if (!tooltip) {
       return button
     }
@@ -526,18 +525,16 @@ const SidebarMenuButton = forwardRef<
         children: tooltip,
       }
     }
+    if (state === "collapsed" && !isMobile) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent side="right" align="center" {...tooltip} />
+        </Tooltip>
+      )
+    }
 
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent
-          side="right"
-          align="center"
-          hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
-        />
-      </Tooltip>
-    )
+    return button
   }
 )
 
