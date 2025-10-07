@@ -69,7 +69,6 @@ const useTabAlertForTasks = (tasks: Task[]) => {
     }
   }, [hasUrgent])
 
-  // Blink favicon
   useFaviconBlink(hasUrgent, alertFavicon, normalFavicon)
 }
 export default useTabAlertForTasks
