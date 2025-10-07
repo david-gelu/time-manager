@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, type ReactNode, useEffect } from 'react'
 
-// Schimbăm structura pentru a avea dimensiuni globale în loc de per parentId
 export type ColumnWidths = {
   [columnId: string]: number
 }
@@ -20,16 +19,12 @@ export const ColumnWidthProvider = ({ children }: { children: ReactNode }) => {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
         const parsed = JSON.parse(saved)
-        // Dacă avem structura veche (cu parentId), convertim la structura nouă
         if (typeof parsed === 'object' && parsed !== null) {
-          // Verificăm dacă e structura veche (cu parentId keys)
           const firstKey = Object.keys(parsed)[0]
           if (firstKey && typeof parsed[firstKey] === 'object' && parsed[firstKey] !== null) {
-            // Structura veche - luăm prima configurație disponibilă
             const firstParentWidths = Object.values(parsed)[0] as ColumnWidths
             return firstParentWidths || {}
           }
-          // Structura nouă
           return parsed
         }
       }
