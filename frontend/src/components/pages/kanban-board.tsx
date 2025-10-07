@@ -94,7 +94,7 @@ export default function KanbanBoard() {
                     }}
                   >
                     <Tooltip>
-                      <TooltipTrigger className="w-full">
+                      <TooltipTrigger asChild className="w-full">
                         <SelectTrigger className="w-full cursor-pointer capitalize">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
@@ -162,7 +162,7 @@ export default function KanbanBoard() {
                     }}
                   >
                     <Tooltip>
-                      <TooltipTrigger className="w-full">
+                      <TooltipTrigger asChild className="w-full">
                         <SelectTrigger className="w-full cursor-pointer capitalize">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
@@ -230,7 +230,7 @@ export default function KanbanBoard() {
                     }}
                   >
                     <Tooltip>
-                      <TooltipTrigger className="w-full">
+                      <TooltipTrigger asChild className="w-full">
                         <SelectTrigger className="w-full cursor-pointer capitalize">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>

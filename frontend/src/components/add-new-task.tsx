@@ -1,5 +1,8 @@
 import { useState } from "react"
-import Calendar, { type CalendarValue } from "./calendar"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "./ui/button"
 import {
   Dialog,
@@ -9,137 +12,140 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from "./ui/dialog"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
 import { Input } from "./ui/input"
-import { Label } from "./ui/label"
 import { Textarea } from "./ui/textarea"
+import Calendar, { type CalendarValue } from "./calendar"
+import { normalizeCalendarValue } from "@/lib/utils"
 import { createDailyTask } from "@/lib/dailyTasks"
 import { Status, type DailyTasks } from "@/types"
-import { useQueryClient } from "@tanstack/react-query"
-import { normalizeCalendarValue } from "@/lib/utils"
+
+const taskSchema = z.object({
+  name: z.string().min(1, "Task name is required").max(15, "Max 15 characters"),
+  description: z.string().min(1, "Task description is required"),
+  date: z.date(),
+})
+
+type TaskFormValues = z.infer<typeof taskSchema>
 
 export default function AddNewTask() {
-  const [selectedDate, setSelectedDate] = useState<CalendarValue>(new Date())
-  const [name, setName] = useState("")
-  const [details, setDetails] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
-
   const queryClient = useQueryClient()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
+  const form = useForm<TaskFormValues>({
+    resolver: zodResolver(taskSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      date: new Date(),
+    },
+  })
 
-    if (!name.trim()) {
-      setError("Task name is required")
-      setIsSubmitting(false)
-      return
-    }
-    if (!details.trim()) {
-      setError("Task description is required")
-      setIsSubmitting(false)
-      return
-    }
-    let isoDate: string | null = null;
-
-    const normalizedDate = normalizeCalendarValue(selectedDate);
-
-    if (normalizedDate instanceof Date) {
-      isoDate = normalizedDate.toISOString();
-    } else if (Array.isArray(normalizedDate)) {
-      isoDate = normalizedDate[0].toISOString();
-    }
-
+  const onSubmit = async (values: TaskFormValues) => {
     try {
       const taskData: DailyTasks = {
         _id: "",
-        name,
-        description: details,
-        date: isoDate || '',
+        name: values.name,
+        description: values.description,
+        date: values.date.toISOString(),
         status: Status.NEW,
         tasks: [],
       }
 
       await createDailyTask(taskData)
+      queryClient.invalidateQueries({ queryKey: ["allDailyTasks"] })
 
-      queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
-
-      setName("")
-      setDetails("")
-      setSelectedDate(new Date())
+      form.reset()
       setOpen(false)
     } catch (err: any) {
-      setError(err.message || "Failed to create task")
-    } finally {
-      setIsSubmitting(false)
+      console.error(err)
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Add Daily tasks</Button>
+        <Button variant="outline">Add Daily Task</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[70vw]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Add daily task</DialogTitle>
-            <DialogDescription></DialogDescription>
-          </DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Add Daily Task</DialogTitle>
+          <DialogDescription>Fill in the details below to create a new task.</DialogDescription>
+        </DialogHeader>
 
-          <div className="grid gap-4 mt-4">
-            {error && <p className="text-red-500">{error}</p>}
-            <div className="grid gap-3">
-              <Label htmlFor="name">Task name</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="New task to do"
-                value={name}
-                maxLength={15}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="details">Details</Label>
-              <Textarea
-                id="details"
-                name="details"
-                placeholder="Details about the tasks"
-                value={details}
-                onChange={(e) => setDetails(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="date">Date</Label>
-              <Calendar
-                showTime
-                selectionMode="single"
-                inline
-                value={selectedDate}
-                onChange={setSelectedDate}
-              />
-            </div>
-          </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Task name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="New task to do" {...field} maxLength={15} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <DialogFooter className="flex justify-between mt-4">
-            <Button
-              className="bg-teal-400"
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Saving..." : "Save changes"}
-            </Button>
-            <DialogClose asChild>
-              <Button variant="outlineDestructive" onClick={() => setOpen(false)}>Cancel</Button>
-            </DialogClose>
-          </DialogFooter>
-        </form>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Details</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Details about the task" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date</FormLabel>
+                  <FormControl>
+                    <Calendar
+                      showTime
+                      selectionMode="single"
+                      inline
+                      value={field.value}
+                      onChange={(value: CalendarValue) => {
+                        const normalized = normalizeCalendarValue(value)
+                        if (normalized instanceof Date) field.onChange(normalized)
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="flex justify-between pt-4">
+              <Button
+                className="bg-teal-400"
+                type="submit"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Saving..." : "Save changes"}
+              </Button>
+
+              <DialogClose asChild>
+                <Button variant="outlineDestructive" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
