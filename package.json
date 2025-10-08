@@ -8,7 +8,7 @@
   "scripts": {
     "build": "yarn workspaces run build",
     "dev": "concurrently \"yarn workspace frontend dev\" \"yarn workspace backend dev\"",
-    "vercel-build": "cd frontend && yarn build"
+    "vercel-build": "cd frontend && yarn install && yarn build"
   },
   "devDependencies": {
     "concurrently": "^8.2.1"
