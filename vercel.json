@@ -1,34 +1,16 @@
 {
-  "version": 2,
-  "installCommand": "yarn install",
-  "buildCommand": "cd frontend && yarn && yarn build",
+  "buildCommand": "yarn workspace frontend build",
   "outputDirectory": "frontend/dist",
-  "builds": [
-    {
-      "src": "backend/src/serverless.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "backend/**"
-        ]
-      }
-    },
-    {
-      "src": "frontend/dist/**/*",
-      "use": "@vercel/static"
+  "installCommand": "yarn install",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node@3"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "backend/src/serverless.ts"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/dist/index.html"
+      "source": "/api/:path*",
+      "destination": "/api"
     }
   ]
 }

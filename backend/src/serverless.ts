@@ -48,20 +48,20 @@ const connectDB = async () => {
 };
 connectDB().catch(console.error);
 
-app.get("/health", (req: Request, res: Response) => {
+app.get("/api/health", (req: Request, res: Response) => {
   res.json({ status: "API is running" });
 });
 
-app.get("/protected", authMiddleware, (req: AuthRequest, res: Response) => {
+app.get("/api/protected", authMiddleware, (req: AuthRequest, res: Response) => {
   res.json({
     message: "Access granted",
     user: req.user,
   });
 });
 
-app.use("/daily-tasks", authMiddleware, dailyTasksRouter);
-app.use("/sub-tasks", authMiddleware, subTasksRouter);
-app.use("/stats", authMiddleware, statsRouter);
+app.use("/api/daily-tasks", authMiddleware, dailyTasksRouter);
+app.use("/api/sub-tasks", authMiddleware, subTasksRouter);
+app.use("/api/stats", authMiddleware, statsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: `Cannot ${req.method} ${req.url}` });
