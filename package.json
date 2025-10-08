@@ -6,7 +6,7 @@
     "backend"
   ],
   "scripts": {
-    "build": "yarn workspace frontend build",
+    "build": "yarn workspace backend build && yarn workspace frontend build",
     "dev": "concurrently \"yarn workspace frontend dev\" \"yarn workspace backend dev\""
   },
   "devDependencies": {

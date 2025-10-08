@@ -1,12 +1,7 @@
 {
-  "buildCommand": "yarn workspace frontend build",
+  "buildCommand": "yarn build",
   "outputDirectory": "frontend/dist",
   "installCommand": "yarn install",
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node@3"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/:path*",
