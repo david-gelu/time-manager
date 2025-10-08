@@ -1,7 +1,12 @@
 {
-  "buildCommand": "yarn build",
+  "buildCommand": "yarn workspaces run build",
   "outputDirectory": "frontend/dist",
   "installCommand": "yarn install",
+  "functions": {
+    "api/**/*.{js,ts}": {
+      "includeFiles": "backend/dist/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/:path*",
