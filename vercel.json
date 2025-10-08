@@ -1,7 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && yarn && yarn build",
+  "buildCommand": "yarn workspace frontend build",
   "outputDirectory": "frontend/dist",
+  "installCommand": "yarn install",
   "builds": [
     {
       "src": "backend/src/serverless.ts",
@@ -16,14 +17,14 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/src/serverless.ts"
+      "dest": "/backend/src/serverless.ts"
     },
     {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/dist/index.html"
+      "dest": "/index.html"
     }
   ]
 }
