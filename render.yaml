@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: time-manager-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: FRONTEND_URL_PROD
+        sync: false
+
+  - type: web
+    name: time-manager-frontend
+    env: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        value: https://time-manager-backend.onrender.com
