@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "yarn install",
-  "buildCommand": "yarn workspace frontend build",
+  "buildCommand": "cd frontend && yarn && yarn build",
   "outputDirectory": "frontend/dist",
   "builds": [
     {
@@ -12,6 +12,10 @@
           "backend/**"
         ]
       }
+    },
+    {
+      "src": "frontend/dist/**/*",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
