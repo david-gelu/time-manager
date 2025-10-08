@@ -1,5 +1,11 @@
 {
   "buildCommand": "yarn workspace frontend build",
   "outputDirectory": "frontend/dist",
-  "installCommand": "yarn install"
+  "installCommand": "yarn install",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/backend/src/serverless.ts"
+    }
+  ]
 }
