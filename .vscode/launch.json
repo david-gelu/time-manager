@@ -8,7 +8,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/backend/src/server.ts",
+      "program": "${workspaceFolder}/backend/src/dev.ts",
       "runtimeArgs": [
         "-r",
         "ts-node/register"

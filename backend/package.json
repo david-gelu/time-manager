@@ -1,11 +1,11 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "dist/server.js",
+  "main": "dist/serverless.js",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "node dist/serverless.js",
     "build": "tsc",
-    "dev": "ts-node src/server.ts",
+    "dev": "ts-node src/dev.ts",
     "watch": "tsc -w"
   },
   "dependencies": {
