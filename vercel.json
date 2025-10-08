@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "cd frontend && yarn install && yarn build",
+  "outputDirectory": "frontend/dist",
   "builds": [
     {
       "src": "backend/src/serverless.ts",
@@ -8,13 +10,6 @@
         "includeFiles": [
           "backend/**"
         ]
-      }
-    },
-    {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
       }
     }
   ],
@@ -28,7 +23,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "dest": "/frontend/dist/$1"
     }
   ]
 }
