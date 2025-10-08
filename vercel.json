@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "yarn build",
+  "buildCommand": "cd frontend && yarn && yarn build",
   "outputDirectory": "frontend/dist",
   "builds": [
     {
@@ -16,14 +16,14 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/src/serverless.ts"
+      "dest": "backend/src/serverless.ts"
     },
     {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/dist/$1"
+      "dest": "frontend/dist/$1"
     }
   ]
 }
