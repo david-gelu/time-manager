@@ -20,17 +20,16 @@ if (!admin.apps.length) {
 
 const app = express();
 
-const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_URL_PROD];
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:4173", // Vite preview port
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL_PROD,
+].filter((origin): origin is string => typeof origin === "string" && !!origin);
 
 app.use(
   cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -67,9 +66,14 @@ app.use((req, res) => {
   res.status(404).json({ error: `Cannot ${req.method} ${req.url}` });
 });
 
-app.use((err: Error, req: Request, res: Response, next: Function) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Something broke!" });
-});
+app.use((err: any, req: Request, res: Response, next: Function) => {
+  console.error('API error:', err && (err.stack || err.message || err))
+  const status = err?.status || 500
+  const payload = {
+    error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : (err?.message || 'Something broke!'),
+    ...(process.env.NODE_ENV !== 'production' ? { stack: err?.stack } : {}),
+  }
+  res.status(status).json(payload)
+})
 
 export default app;

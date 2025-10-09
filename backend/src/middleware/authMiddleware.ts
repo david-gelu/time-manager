@@ -5,24 +5,17 @@ export interface AuthRequest extends Request {
   user?: admin.auth.DecodedIdToken
 }
 
-export const authMiddleware = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const authHeader = req.headers.authorization
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "No token provided" })
-  }
-
-  const token = authHeader.split(" ")[1]
-
+export async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const decodedToken = await admin.auth().verifyIdToken(token)
-    req.user = decodedToken
+    const authHeader = req.headers.authorization
+    if (!authHeader) return res.status(401).json({ error: 'Missing Authorization header' })
+    const token = authHeader.replace('Bearer ', '')
+    const decoded = await admin.auth().verifyIdToken(token).catch(() => null)
+    if (!decoded) return res.status(401).json({ error: 'Invalid token' })
+    req.user = decoded
     next()
-  } catch (error) {
-    console.error("Token verification failed:", error)
-    return res.status(401).json({ error: "Invalid token" })
+  } catch (err) {
+    console.error('Auth error', err)
+    return res.status(401).json({ error: 'Authentication failed' })
   }
 }
