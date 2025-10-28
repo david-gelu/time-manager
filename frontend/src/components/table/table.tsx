@@ -347,7 +347,7 @@ export default function TableComponent() {
               <Button variant="outline"><Columns className="mr-2 h-4 w-4" />Columns</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Vizibilitate coloane</DropdownMenuLabel>
+              <DropdownMenuLabel>Column visibility</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {table.getAllColumns().filter(c => c.getCanHide()).map(c => (
                 <DropdownMenuCheckboxItem
@@ -418,7 +418,6 @@ export default function TableComponent() {
 
                   return (
                     <Fragment key={row.id}>
-                      {/* Tabel principal row */}
                       <TableRow className="border-b hover:bg-muted/30">
                         {row.getVisibleCells().map(cell => (
                           <TableCell
@@ -431,7 +430,6 @@ export default function TableComponent() {
                         ))}
                       </TableRow>
 
-                      {/* Subtable cu motion */}
                       <TableRow>
                         <TableCell colSpan={visibleColumns.length} className="p-0">
                           <AnimatePresence initial={false}>
@@ -460,7 +458,7 @@ export default function TableComponent() {
                     className="p-8 text-center w-full flex flex-col items-center gap-2 text-xl absolute left-[0%] top-[25%] -translate-50%"
                   >
                     <TableCellsMerge className="h-20 w-full" />
-                    Nu s-au găsit rezultate.
+                    No results found.
                   </TableCell>
                 </TableRow>
               )}
@@ -472,21 +470,21 @@ export default function TableComponent() {
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <ChevronsLeft /> Anterior
+              <ChevronsLeft /> Prev
             </Button>
             <span className="text-sm text-foreground">
-              Pagina{' '}
+              Page{' '}
               <strong>
-                {table.getState().pagination.pageIndex + 1} din {table.getPageCount()}
+                {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
               </strong>{' '}
-              | {table.getFilteredRowModel().rows.length} rezultate totale
+              | {table.getFilteredRowModel().rows.length} total results
             </span>
             <Button
               className="px-4 py-2 text-sm border rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              Următorul <ChevronsRight />
+              Next <ChevronsRight />
             </Button>
           </div>
         </div></motion.div>

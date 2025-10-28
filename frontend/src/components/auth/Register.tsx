@@ -56,9 +56,9 @@ export function Register() {
 
   return (
     <div className="w-full h-screen flex items-center justify-center">
-      <div className="w-full max-w-md space-y-8 p-8">
+      <div className="w-full max-w-md flex flex-col gap-8 p-8">
         <div className="text-center">
-          <h2 className="text-2xl font-bold">Creează un cont nou</h2>
+          <h2 className="text-2xl font-bold">Create a new account</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -89,7 +89,7 @@ export function Register() {
             disabled={isLoading}
           />
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Se creează..." : "Crează cont"}
+            {isLoading ? "Creating..." : "Create account"}
           </Button>
         </form>
 
@@ -98,7 +98,7 @@ export function Register() {
             <span className="w-full border-t" />
           </span>
           <span className="relative flex justify-center text-xs uppercase bg-background px-2 text-muted-foreground">
-            Sau continuă cu
+            Or continue with
           </span>
         </div>
 
@@ -109,11 +109,11 @@ export function Register() {
           onClick={handleGoogleSignIn}
           disabled={isLoading}
         >
-          {isLoading ? "Se autentifică..." : "Continuă cu Google"}
+          {isLoading ? "Authenticating..." : "Connect with Google"}
         </Button>
 
         <p className="text-center text-sm">
-          Ai deja un cont? <Link to="/auth/login" className="text-primary hover:underline">Conectează-te</Link>
+          Already have an account? <Link to="/auth/login" className="text-primary hover:underline">Connect</Link>
         </p>
       </div>
     </div>

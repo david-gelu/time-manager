@@ -45,7 +45,7 @@ export function SubTaskDetails({ taskId, trigger }: SubTaskDetailsProps) {
         {trigger ? (
           trigger
         ) : (
-          <Button variant="outline">Vizualizează</Button>
+          <Button variant="outline">View</Button>
         )}
       </DrawerTrigger>
       <DrawerContent>

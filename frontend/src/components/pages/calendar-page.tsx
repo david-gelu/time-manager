@@ -134,7 +134,7 @@ export default function CalendarPage() {
 
   return (
     <div>
-      <div className="mx-auto space-y-6">
+      <div className="mx-auto flex flex-col gap-6">
         <Card className="shadow-lg">
           <CardHeader className="rounded-t-lg">
             <CardTitle className="flex items-center gap-2 ">
@@ -183,7 +183,7 @@ export default function CalendarPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <div className="grid grid-cols-8 gap-1 font-semibold text-center text-xs">
                 <div className="py-2">Week</div>
                 <div className="py-2">Mon</div>

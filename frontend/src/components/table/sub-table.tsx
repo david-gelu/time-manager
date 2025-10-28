@@ -199,7 +199,7 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
                               taskId={row._id as string}
                               trigger={
                                 <TooltipTrigger asChild>
-                                  <Button variant="ghost" className="w-full justify-start px-2">  Vizualizează sub task </Button>
+                                  <Button variant="ghost" className="w-full justify-start px-2">  View sub task </Button>
                                 </TooltipTrigger>
                               }
                             />

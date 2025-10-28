@@ -52,7 +52,7 @@ export default function KanbanBoard() {
 
 
   return (
-    <div className="w-full p-4 space-y-4">
+    <div className="w-full p-4 flex flex-col gap-4">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

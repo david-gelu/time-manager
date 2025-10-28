@@ -51,7 +51,7 @@ export function Login() {
 
   return (
     <div className="w-full h-screen flex items-center justify-center">
-      <div className="w-full max-w-md space-y-8 p-8">
+      <div className="w-full max-w-md flex flex-col gap-8 p-8">
         <div className="text-center">
           <h2 className="text-2xl font-bold">Conectează-te</h2>
         </div>
@@ -74,7 +74,7 @@ export function Login() {
             disabled={isLoading}
           />
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Se conectează..." : "Conectează-te"}
+            {isLoading ? "Connecting..." : "Connect"}
           </Button>
         </form>
 
@@ -83,7 +83,7 @@ export function Login() {
             <span className="w-full border-t" />
           </span>
           <span className="relative flex justify-center text-xs uppercase bg-background px-2 text-muted-foreground">
-            Sau continuă cu
+            Or continue with
           </span>
         </div>
 
@@ -94,11 +94,11 @@ export function Login() {
           onClick={handleGoogleSignIn}
           disabled={isLoading}
         >
-          {isLoading ? "Se autentifică..." : "Conectare cu Google"}
+          {isLoading ? "Authenticating..." : "Connect with Google"}
         </Button>
 
         <p className="text-center text-sm">
-          Nu ai cont? <Link to="/auth/register" className="text-primary hover:underline">Creează unul</Link>
+          Don't have an account? <Link to="/auth/register" className="text-primary hover:underline">Create one</Link>
         </p>
       </div>
     </div>

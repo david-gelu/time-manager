@@ -263,13 +263,13 @@ export default function EditTask({ open, onOpenChange, dailyTask, subTask }: Edi
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="p-2 max-h-[20dvh] overflow-y-auto">
-                    <div className="space-y-3 pt-2">
+                    <div className="flex flex-col gap-3 pt-2">
                       {checklist.length === 0 ? (
                         <div className="text-sm text-gray-500 text-center py-2">
                           No checklist items yet. Click below to add one.
                         </div>
                       ) : (
-                        <div className="space-y-2">
+                        <div className="my-2">
                           {checklist.map((item, idx) => (
                             <div key={idx} className="flex items-center gap-2 group">
                               <Checkbox

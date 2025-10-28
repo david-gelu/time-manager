@@ -23,10 +23,10 @@ export function UserDashboard() {
     setLoading(true)
     try {
       await updateUserEmail(newEmail)
-      toast.success('Email actualizat cu succes')
+      toast.success('Email successfully updated')
       setNewEmail('')
     } catch (err) {
-      toast.error('Actualizarea email-ului a eșuat')
+      toast.error('Email update failed')
     } finally {
       setLoading(false)
     }
@@ -35,18 +35,18 @@ export function UserDashboard() {
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newPassword || newPassword.length < 6) {
-      toast.error('Parola trebuie să aibă cel puțin 6 caractere')
+      toast.error('Password must be at least 6 characters')
       return
     }
 
     setLoading(true)
     try {
       await updateUserPassword(newPassword)
-      toast.success('Parola a fost actualizată cu succes')
+      toast.success('Password successfully updated')
       setNewPassword('')
     } catch (err) {
       console.error(err)
-      toast.error('Actualizarea parolei a eșuat. Este posibil să fie nevoie să vă autentificați din nou.')
+      toast.error('Password update failed. You may need to sign in again.')
     } finally {
       setLoading(false)
     }
@@ -58,9 +58,9 @@ export function UserDashboard() {
       await updateProfile(user as User, {
         displayName: displayName
       })
-      toast.success('Profil actualizat cu succes')
+      toast.success('Profile successfully updated')
     } catch (err) {
-      toast.error('Actualizarea profilului a eșuat')
+      toast.error('Profile update failed')
     } finally {
       window.location.reload()
       setLoading(false)
@@ -72,9 +72,9 @@ export function UserDashboard() {
     setLoading(true)
     try {
       await sendEmailVerification(user)
-      toast.success('Email de verificare trimis')
+      toast.success('Verification email sent')
     } catch (err) {
-      toast.error('Trimiterea email-ului de verificare a eșuat')
+      toast.error('Sending verification email failed')
     } finally {
       setLoading(false)
     }
@@ -83,31 +83,31 @@ export function UserDashboard() {
   const handleLogout = async () => {
     try {
       await logout()
-      toast.success('Deconectare reușită')
+      toast.success('Successfully logged out')
     } catch (err) {
-      toast.error('Deconectarea a eșuat')
+      toast.error('Logout failed')
     }
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-8 space-y-6 p-4">
+    <div className="w-full max-w-4xl mx-auto mt-8  flex flex-col gap-6 p-4">
       <div className="text-center">
-        <h2 className="text-2xl font-bold">Profilul meu</h2>
+        <h2 className="text-2xl font-bold">Profile</h2>
         <p className="text-muted-foreground">{user?.displayName}</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Informații cont</CardTitle>
+            <CardTitle>Account Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-sm">Nume afișat</Label>
+              <Label className="text-sm">Display Name</Label>
               <Input
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Nume afișat"
+                placeholder="Display name"
                 className="mt-1"
               />
             </div>
@@ -116,16 +116,16 @@ export function UserDashboard() {
               <p className="text-lg">{user?.email}</p>
             </div>
             <div>
-              <Label className="text-sm">Status email</Label>
+              <Label className="text-sm">Email status</Label>
               <p className={user?.emailVerified ? "text-green-600" : "text-red-600"}>
-                {user?.emailVerified ? 'Verificat ✓' : 'Neverificat'}
+                {user?.emailVerified ? '✅ Verified' : '❌ Not verified'}
               </p>
             </div>
             <div>
-              <Label className="text-sm">Cont creat la</Label>
+              <Label className="text-sm">Account created at</Label>
               <p className="text-sm">
                 {user?.metadata?.creationTime ? new Date(user.metadata.creationTime)
-                  .toLocaleDateString('ro-RO', {
+                  .toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -139,43 +139,43 @@ export function UserDashboard() {
               disabled={loading}
               className="w-full"
             >
-              Salvează modificările
+              Save changes
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Securitate</CardTitle>
+            <CardTitle>Security</CardTitle>
             <CardDescription>
-              Actualizează datele de autentificare
+              Update your login details
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleEmailUpdate} className="space-y-2">
-              <Label>Email nou</Label>
+              <Label>New Email</Label>
               <Input
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="email@exemplu.com"
+                placeholder="email@example.com"
               />
               <Button
                 type="submit"
                 disabled={loading || !newEmail}
                 className="w-full"
               >
-                Actualizează email
+                Update email
               </Button>
             </form>
 
             <form onSubmit={handlePasswordUpdate} className="space-y-2">
-              <Label>Parolă nouă</Label>
+              <Label>New Password</Label>
               <Input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Minim 6 caractere"
+                placeholder="Minimum 6 characters"
                 minLength={6}
               />
               <Button
@@ -183,7 +183,7 @@ export function UserDashboard() {
                 disabled={loading || !newPassword || newPassword.length < 6}
                 className="w-full"
               >
-                {loading ? 'Se actualizează...' : 'Schimbă parola'}
+                {loading ? 'Updating...' : 'Change password'}
               </Button>
             </form>
 
@@ -193,7 +193,7 @@ export function UserDashboard() {
               onClick={handleVerifyEmail}
               className="w-full"
             >
-              {user?.emailVerified ? 'Email verificat ✓' : 'Verifică email-ul'}
+              {user?.emailVerified ? 'Email verified ✓' : 'Verify email'}
             </Button>
           </CardContent>
         </Card>
@@ -201,21 +201,21 @@ export function UserDashboard() {
 
       <div className="grid gap-6 md:grid-cols-3">
         {[{
-          title: 'Ultima autentificare',
+          title: 'Last sign-in',
           value: user?.metadata?.lastSignInTime ?
-            new Date(user.metadata.lastSignInTime).toLocaleDateString('ro-RO') :
+            new Date(user.metadata.lastSignInTime).toLocaleDateString('en-US') :
             'N/A',
-          desc: 'data ultimei conectări'
+          desc: 'date of last login'
         },
         {
-          title: 'Status cont',
-          value: user?.emailVerified ? 'Activ' : 'În așteptare',
-          desc: user?.emailVerified ? 'Cont verificat' : 'Email neverificat'
+          title: 'Account status',
+          value: user?.emailVerified ? 'Active' : 'Pending',
+          desc: user?.emailVerified ? 'Account verified' : 'Email not verified'
         },
         {
-          title: 'Sesiune',
-          value: 'Activă',
-          desc: 'Conectat acum'
+          title: 'Session',
+          value: 'Active',
+          desc: 'Logged in now'
         }].map((stat, index) => (
           <Card key={index}>
             <CardContent className="p-2">
@@ -235,7 +235,7 @@ export function UserDashboard() {
         className="w-full"
         disabled={loading}
       >
-        Deconectare
+        Logout
       </Button>
     </div>
   )
