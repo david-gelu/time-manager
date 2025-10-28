@@ -14,8 +14,6 @@ export function useApi() {
         Authorization: `Bearer ${token}`,
       },
     })
-    console.log("🚀 API_URL", API_URL)
-    console.log(`🚀 ~ response:`, response)
 
     if (!response.ok) {
       throw new Error("Unauthorized")

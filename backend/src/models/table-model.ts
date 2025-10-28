@@ -6,6 +6,11 @@ export enum Status {
   COMPLETED = 'completed',
 }
 
+export interface IChecklistItem {
+  label: string
+  checked: boolean
+}
+
 export type SubTask = {
   _id: Types.ObjectId;
   task_name: string;
@@ -13,6 +18,7 @@ export type SubTask = {
   start_date: string;
   end_date: string;
   description: string;
+  checklist?: IChecklistItem[]
 };
 
 export interface DailyTasks {
@@ -25,12 +31,19 @@ export interface DailyTasks {
   tasks: SubTask[];
 }
 
+const ChecklistSchema = new Schema<IChecklistItem>({
+  label: { type: String, required: true },
+  checked: { type: Boolean, default: false }
+})
+
+
 const SubTaskSchema = new Schema<SubTask>({
   task_name: { type: String, required: true },
   status: { type: String, enum: Object.values(Status), default: Status.NEW },
   start_date: { type: String, required: true },
   end_date: { type: String, required: true },
   description: { type: String, required: true },
+  checklist: { type: [ChecklistSchema], default: [] }
 });
 
 

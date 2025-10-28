@@ -48,7 +48,7 @@ export default function KanbanBoard() {
     queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusNew'] })
     queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusInProgress'] })
     queryClient.invalidateQueries({ queryKey: ['allTasksWithStatusCompleted'] })
-  }, [openEditModal])
+  }, [openEditModal, selectedTask])
 
 
   return (

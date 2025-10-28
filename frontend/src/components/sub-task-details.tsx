@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Drawer,
   DrawerClose,
@@ -15,6 +15,9 @@ import { format } from "date-fns"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "./ui/badge"
 import { Status } from "@/types"
+import { Checkbox } from "./ui/checkbox"
+import { Label } from "./ui/label"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface SubTaskDetailsProps {
   taskId: string
@@ -22,8 +25,16 @@ interface SubTaskDetailsProps {
 }
 
 export function SubTaskDetails({ taskId, trigger }: SubTaskDetailsProps) {
-  const [open, setOpen] = useState(false)
+  console.log(`🚀 ~ taskId:`, taskId)
   const { data } = useGetSubTask(taskId)
+  const [open, setOpen] = useState(false)
+  console.log(`🚀 ~ open:`, open)
+
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['getSubTask', taskId] })
+  }, [open])
 
   const start = data ? new Date(data.start_date) : null
   const end = data ? new Date(data.end_date) : null
@@ -62,6 +73,11 @@ export function SubTaskDetails({ taskId, trigger }: SubTaskDetailsProps) {
                       <span>End: {format(end!, "dd-MM-yyyy HH:mm")}</span>
                     </div>
                   </div>
+                  <Separator className="my-2" />
+                  {data.checklist && data.checklist.map(c => <div className="flex items-center gap-2 text-foreground" key={c.label}>
+                    <Checkbox checked={c.checked} key={c.label} className=" cursor-not-allowed" />
+                    <Label>{c.label}</Label>
+                  </div>)}
                 </div>
               </DrawerDescription>
             </DrawerHeader>

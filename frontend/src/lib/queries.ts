@@ -132,7 +132,10 @@ export function useGetSubTask(taskId: string = "") {
   return useQuery<Task>({
     queryKey: ['getSubTask', taskId],
     queryFn: () => getSubTask(taskId),
-    staleTime: 1000 * 60,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    gcTime: 0,
   });
 }
 

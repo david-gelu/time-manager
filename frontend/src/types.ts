@@ -10,13 +10,19 @@ export type SubTaskWithParent = Task & {
   parentName: string
 }
 
+export type ChecklistItem = {
+  label: string
+  checked: boolean
+}
+
 export type Task = {
   _id?: string,
   task_name: string,
   status: Status,
   start_date: string,
   end_date: string,
-  description: string
+  description: string,
+  checklist?: ChecklistItem[]
 }
 
 export interface DailyTasks {
