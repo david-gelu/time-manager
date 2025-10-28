@@ -3,6 +3,18 @@ import { AuthRequest } from "../middleware/authMiddleware"
 import { DailyTasksModel } from "../models"
 import { Status, SubTask } from "../models/table-model"
 
+function determineStatusFromChecklist(checklist: Array<{ checked: boolean }> = []): Status {
+  if (!checklist.length) return Status.NEW
+
+  const allChecked = checklist.every(item => item.checked)
+  if (allChecked) return Status.COMPLETED
+
+  const anyChecked = checklist.some(item => item.checked)
+  if (anyChecked) return Status.IN_PROGRESS
+
+  return Status.NEW
+}
+
 const router = Router()
 export type SubTaskWithParent = SubTask & {
   parentName: string
@@ -153,6 +165,53 @@ router.get("/:taskId", async (req: AuthRequest, res) => {
     const userName = req.user?.name || req.user?.email || "Unknown"
     return res.status(500).json({
       error: `Failed to fetch subtask for user: ${userName}, ${error}`,
+    })
+  }
+})
+
+router.put("/edit-task/:taskId", async (req: AuthRequest, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Unauthorized" })
+  }
+
+  const { taskId } = req.params
+  const { taskData } = req.body
+
+  try {
+    let newStatus = taskData.status
+    if (Array.isArray(taskData.checklist)) {
+      newStatus = determineStatusFromChecklist(taskData.checklist)
+    }
+
+    const result = await DailyTasksModel.findOneAndUpdate(
+      {
+        userId: req.user.uid,
+        'tasks._id': taskId
+      },
+      {
+        $set: {
+          'tasks.$.task_name': taskData.task_name,
+          'tasks.$.description': taskData.description,
+          'tasks.$.start_date': taskData.start_date,
+          'tasks.$.end_date': taskData.end_date,
+          'tasks.$.status': newStatus,
+          'tasks.$.checklist': taskData.checklist
+        }
+      },
+      { new: true }
+    )
+
+    if (!result) {
+      return res.status(404).json({ error: "Task not found" })
+    }
+
+    const updatedTask = result.tasks.find(t => t._id.toString() === taskId)
+    return res.json(updatedTask)
+
+  } catch (error) {
+    const userName = req.user?.name || req.user?.email || "Unknown"
+    return res.status(500).json({
+      error: `Failed to update subtask for user: ${userName}, ${error}`,
     })
   }
 })

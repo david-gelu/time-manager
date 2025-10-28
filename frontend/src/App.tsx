@@ -11,12 +11,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
-  useSidebar,
 } from "./components/ui/sidebar"
 import {
   Breadcrumb,
@@ -27,15 +23,10 @@ import {
   BreadcrumbSeparator,
 } from "./components/ui/breadcrumb"
 
-import Calendar, { type CalendarValue } from "./components/calendar"
-import { Kanban, ChevronRight, Logs, Gauge, CalendarSearch } from "lucide-react"
+// import Calendar, { type CalendarValue } from "./components/calendar"
+import { Kanban, Logs, Gauge, CalendarSearch } from "lucide-react"
 import { Outlet, Link, useLocation } from "react-router"
 import { useState } from "react"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import { AuthProvider } from './contexts/AuthContext';
 import { NavUser } from "./components/nav-user"
 import AddNewTask from "./components/add-new-task"
@@ -43,7 +34,7 @@ import { ColumnWidthProvider } from "./contexts/ColumnWidthContext"
 
 export default function App() {
   const [openItems, setOpenItems] = useState<string[]>([])
-  const [selectedDate, setSelectedDate] = useState<CalendarValue>(new Date())
+  // const [selectedDate, setSelectedDate] = useState<CalendarValue>(new Date())
 
   const menuItems = [
     {
@@ -196,7 +187,7 @@ export default function App() {
                 </div>
                 <div className="shrink-0 ml-auto flex items-center gap-2">
                   <AddNewTask />
-                  <Calendar inline showTime selectionMode="range" value={selectedDate} onChange={setSelectedDate} />
+                  {/* <Calendar inline showTime selectionMode="range" value={selectedDate} onChange={setSelectedDate} /> */}
                   <ModeToggle />
                 </div>
               </header>

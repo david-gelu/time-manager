@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from 'react'
+import { useState, type MouseEvent, type ReactNode } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { MoveHorizontal, Settings2, MoreHorizontal } from 'lucide-react'
 import { Button } from '../ui/button'
@@ -96,12 +96,19 @@ export default function SubTable<T extends Record<string, any>>({ data }: SubTab
     }
   }
 
-  const renderCellValue = (row: Task, col: keyof Task) => {
-    if ((col === 'start_date' || col === 'end_date') && row[col]) {
-      const date = new Date(row[col])
+  const renderCellValue = (row: Task, col: keyof Task): ReactNode => {
+    const value = row[col]
+    if ((col === 'start_date' || col === 'end_date') && value) {
+      const date = new Date(value as string)
       return isNaN(date.getTime()) ? 'Invalid date' : format(date, 'dd-MM-yyyy HH:mm')
     }
-    return row[col]
+    if (Array.isArray(value)) {
+      return value.map((item, i) => (
+        <span key={i}>{typeof item === 'object' ? JSON.stringify(item) : String(item)}</span>
+      ))
+    }
+    if (value === null || value === undefined) return ''
+    return String(value)
   }
 
   useTabAlertForTasks(data)

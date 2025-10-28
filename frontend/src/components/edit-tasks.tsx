@@ -24,6 +24,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from "./ui/accordion"
+import { Eraser } from "lucide-react"
 
 interface EditTaskProps {
   open: boolean
@@ -96,12 +97,36 @@ export default function EditTask({ open, onOpenChange, dailyTask, subTask }: Edi
   const isSubTask = !!subTask
 
   const addChecklistItem = () => {
-    setChecklist(prev => [...prev, { label: "", checked: false }])
+    const newChecklist = [...checklist, { label: "", checked: false }]
+    setChecklist(newChecklist)
     setAccordionValue("checklist")
+
+    if (newChecklist.some(item => item.checked)) {
+      setStatus(Status.IN_PROGRESS)
+    } else {
+      setStatus(Status.NEW)
+    }
   }
 
   const removeChecklistItem = (index: number) => {
     setChecklist(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleChecklistChange = (idx: number, checked: boolean) => {
+    const newChecklist = [...checklist]
+    newChecklist[idx] = { ...newChecklist[idx], checked }
+    setChecklist(newChecklist)
+
+    const checkedCount = newChecklist.filter(item => item.checked).length
+    const totalItems = newChecklist.length
+
+    if (checkedCount === 0) {
+      setStatus(Status.NEW)
+    } else if (checkedCount === totalItems) {
+      setStatus(Status.COMPLETED)
+    } else {
+      setStatus(Status.IN_PROGRESS)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -262,6 +287,9 @@ export default function EditTask({ open, onOpenChange, dailyTask, subTask }: Edi
                       )}
                     </div>
                   </AccordionTrigger>
+                  <div className="w-full flex justify-end pe-4">
+                    <Button variant="outline" onClick={addChecklistItem} className="w-full mt-2 ml-auto w-auto"> + Add checklist item </Button>
+                  </div>
                   <AccordionContent className="p-2 max-h-[20dvh] overflow-y-auto">
                     <div className="flex flex-col gap-3 pt-2">
                       {checklist.length === 0 ? (
@@ -269,18 +297,12 @@ export default function EditTask({ open, onOpenChange, dailyTask, subTask }: Edi
                           No checklist items yet. Click below to add one.
                         </div>
                       ) : (
-                        <div className="my-2">
+                        <div className="flex flex-col justify-center gap-2">
                           {checklist.map((item, idx) => (
                             <div key={idx} className="flex items-center gap-2 group">
                               <Checkbox
                                 checked={!!item.checked}
-                                onCheckedChange={(checked) => {
-                                  setChecklist(prev => {
-                                    const newChecklist = [...prev];
-                                    newChecklist[idx] = { ...newChecklist[idx], checked: !!checked };
-                                    return newChecklist;
-                                  });
-                                }}
+                                onCheckedChange={(checked) => handleChecklistChange(idx, !!checked)}
                                 className="w-4 h-4"
                               />
                               <Input
@@ -289,28 +311,11 @@ export default function EditTask({ open, onOpenChange, dailyTask, subTask }: Edi
                                 placeholder="Enter item description..."
                                 className="flex-1"
                               />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeChecklistItem(idx)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                ✕
-                              </Button>
+                              <Button type="button" variant="ghost" size="sm" onClick={() => removeChecklistItem(idx)}>   <Eraser /></Button>
                             </div>
                           ))}
                         </div>
                       )}
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={addChecklistItem}
-                        className="w-full mt-2"
-                      >
-                        + Add checklist item
-                      </Button>
                     </div>
                   </AccordionContent>
                 </AccordionItem>

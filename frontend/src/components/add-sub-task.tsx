@@ -43,6 +43,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from "./ui/accordion"
+import { Eraser } from "lucide-react"
 
 interface AddSubTaskProps {
   open: boolean
@@ -305,6 +306,9 @@ export default function AddSubTask({ open: openModal, onOpenChange, task }: AddS
                       )}
                     </div>
                   </AccordionTrigger>
+                  <div className="w-full flex justify-end pe-4">
+                    <Button variant="outline" onClick={addChecklistItem} className="w-full mt-2 ml-auto w-auto"> + Add checklist item </Button>
+                  </div>
                   <AccordionContent className="p-2 max-h-[20dvh] overflow-y-auto">
                     <div className="flex flex-col gap-3 pt-2">
                       {fields.length === 0 ? (
@@ -331,28 +335,11 @@ export default function AddSubTask({ open: openModal, onOpenChange, task }: AddS
                                 placeholder="Enter item description..."
                                 className="flex-1"
                               />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeChecklistItem(idx)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                ✕
-                              </Button>
+                              <Button type="button" variant="ghost" size="sm" onClick={() => removeChecklistItem(idx)}>   <Eraser /></Button>
                             </div>
                           ))}
                         </div>
                       )}
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={addChecklistItem}
-                        className="w-full mt-2"
-                      >
-                        + Add checklist item
-                      </Button>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
