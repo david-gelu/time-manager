@@ -28,7 +28,7 @@ import {
 } from "./components/ui/breadcrumb"
 
 import Calendar, { type CalendarValue } from "./components/calendar"
-import { Kanban, ChevronRight, Logs, Gauge } from "lucide-react"
+import { Kanban, ChevronRight, Logs, Gauge, CalendarSearch } from "lucide-react"
 import { Outlet, Link, useLocation } from "react-router"
 import { useState } from "react"
 import {
@@ -62,6 +62,12 @@ export default function App() {
       title: "Kanban Bord",
       url: "/kanban",
       icon: Kanban,
+      children: []
+    },
+    {
+      title: "Calendar",
+      url: "/calendar",
+      icon: CalendarSearch,
       children: []
     },
   ]

@@ -12,6 +12,7 @@ import { UserDashboard } from '@/components/auth/UserDashboard'
 import { auth } from '@/lib/firebase'
 import KanbanBoard from '@/components/pages/kanban-board'
 import DailyTasks from '@/components/pages/daily-tasks'
+import CalendarPage from '@/components/pages/calendar-page'
 
 const queryClient = new QueryClient()
 
@@ -76,6 +77,10 @@ export const router = createBrowserRouter([
       {
         path: 'kanban',
         element: <ProtectedRoute><KanbanBoard /></ProtectedRoute>
+      },
+      {
+        path: 'calendar',
+        element: <ProtectedRoute><CalendarPage /></ProtectedRoute>
       }
     ]
   }
