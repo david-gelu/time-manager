@@ -22,18 +22,33 @@ router.post("/", async (req, res) => {
 })
 
 router.get("/", async (req: AuthRequest, res) => {
-  if (!req.user) {
-    return res.status(401).json({ error: "Unauthorized" })
-  }
-
   try {
-    const tasks = await DailyTasksModel.find({ userId: req.user.uid })
-    return res.json(tasks || [])
+    const { search } = req.query
+    const userId = req.user?.uid
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" })
+    }
+
+    const query: any = { userId }
+
+    // Add case-insensitive name search if search parameter exists
+    if (search) {
+      query.$or = [
+        { name: { $regex: search as string, $options: 'i' } },
+      ]
+    }
+
+    const tasks = await DailyTasksModel
+      .find(query)
+      .sort({ date: -1 })
+      .lean()
+      .exec()
+
+    res.json(tasks)
   } catch (error) {
-    const userName = req.user?.name || req.user?.email || "Unknown"
-    return res.status(500).json({
-      error: `Failed to fetch DailyTasks for user: ${userName}, ${error}`,
-    })
+    console.error('Error fetching tasks:', error)
+    res.status(500).json({ error: "Failed to fetch tasks" })
   }
 })
 

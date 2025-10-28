@@ -37,13 +37,18 @@ import { deleteDailyTask, duplicateDailyTask } from '@/lib/dailyTasks'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { Badge } from '../ui/badge'
+import { useSearchParams } from 'react-router'
+import { useDebounce } from '@/hooks/useDebounce'
 
 export default function TableComponent() {
-  const { data = [], isLoading } = useAllDailyTasks()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '')
+  const debouncedSearch = useDebounce(searchInput, 500)
+
+  const { data = [], isLoading, error } = useAllDailyTasks(debouncedSearch)
   const [sorting, setSorting] = useState([{ id: 'date', desc: true }])
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
-  const [globalFilter, setGlobalFilter] = useState<string>('')
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [openModal, setOpenModal] = useState(false)
   const [openEditModal, setOpenEditModal] = useState(false)
@@ -214,7 +219,6 @@ export default function TableComponent() {
                   toast.success(`${row.original.name} task deleted successfully`)
                   queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] })
                 }).catch((err) => {
-                  console.error(`🚀 ~ err:`, err)
                   toast.error("Failed to delete task")
                 })}>
                   <TooltipTrigger>Delete daily task</TooltipTrigger>
@@ -229,7 +233,7 @@ export default function TableComponent() {
       }
     ];
 
-    return data.some(d => d.tasks.length > 0) ? [expanderCol, ...columns] : columns;
+    return data.some((d: DailyTasks) => d.tasks.length > 0) ? [expanderCol, ...columns] : columns;
   };
 
 
@@ -238,7 +242,7 @@ export default function TableComponent() {
   const table = useReactTable({
     data: data || [],
     columns,
-    state: { sorting, columnFilters, columnVisibility, globalFilter },
+    state: { sorting, columnFilters, columnVisibility },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -246,7 +250,6 @@ export default function TableComponent() {
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: setGlobalFilter,
     globalFilterFn: (row, columnId, filterValue) => {
       const searchValue = String(filterValue).toLowerCase().trim()
       if (!searchValue) return true
@@ -326,6 +329,23 @@ export default function TableComponent() {
     return handleMouseDown
   }
 
+  // Update URL when search changes
+  useEffect(() => {
+    if (debouncedSearch) {
+      setSearchParams({ search: debouncedSearch })
+    } else {
+      searchParams.delete('search')
+      setSearchParams(searchParams)
+    }
+  }, [debouncedSearch, setSearchParams])
+
+  if (error) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-destructive">Error loading tasks: {error.message}</p>
+      </div>
+    )
+  }
 
   return (
     <div className="px-4 w-full mx-auto">
@@ -337,11 +357,15 @@ export default function TableComponent() {
         <div className="flex items-center justify-end py-1 gap-2">
           <Input
             type="text"
-            placeholder="Search..."
-            value={globalFilter ?? ''}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
+            placeholder="Search tasks..."
+            value={searchInput}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+              setSearchInput(e.target.value)
+            }}
             className="max-w-[200px]"
+            disabled={isLoading}
           />
+          {isLoading && <span className="text-muted-foreground">Loading...</span>}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline"><Columns className="mr-2 h-4 w-4" />Columns</Button>

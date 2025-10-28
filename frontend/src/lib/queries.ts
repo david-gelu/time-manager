@@ -1,3 +1,4 @@
+import { auth } from "@/lib/firebase"
 import { useQuery, useQueryClient, useMutation, keepPreviousData } from '@tanstack/react-query';
 import {
   getAllDailyTasks,
@@ -26,12 +27,30 @@ import {
   countSubTasksWithStatusNew
 } from './stats';
 
-export function useAllDailyTasks() {
-  return useQuery<DailyTasks[]>({
-    queryKey: ['allDailyTasks'],
-    queryFn: getAllDailyTasks,
-    staleTime: 1000 * 60,
-  });
+export function useAllDailyTasks(search?: string) {
+  return useQuery({
+    queryKey: ['allDailyTasks', search],
+    queryFn: async () => {
+      const token = await auth.currentUser?.getIdToken()
+      if (!token) throw new Error('Not authenticated')
+
+      const searchParams = search ? `?search=${encodeURIComponent(search)}` : ''
+      const response = await fetch(`/api/daily-tasks${searchParams}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to fetch daily tasks')
+      }
+
+      return response.json() as Promise<DailyTasks[]>
+    },
+    enabled: !!auth.currentUser
+  })
 }
 
 export function useCreateDailyTask() {
