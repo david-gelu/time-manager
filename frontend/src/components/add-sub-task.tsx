@@ -57,17 +57,24 @@ const formSchema = z.object({
   startDate: z.date(),
   endDate: z.date(),
   status: z.nativeEnum(Status),
-  checklist: z
-    .array(
-      z.object({
-        label: z.string().min(1, "Label is required").max(1000, "Max 1000 chars"),
-        checked: z.boolean()
-      })
-    )
+  checklist: z.array(
+    z.object({
+      label: z.string().max(1000, "Max 1000 chars"),
+      checked: z.boolean()
+    })
+  )
     .optional()
 }).refine((data) => data.endDate >= data.startDate, {
   message: "End date must be after start date",
   path: ["endDate"]
+}).refine((data) => {
+  if (data.checklist && data.checklist.length > 0) {
+    return data.checklist.every(item => item.label.trim().length > 0)
+  }
+  return true
+}, {
+  message: "All checklist items must have a description",
+  path: ["checklist"]
 })
 
 type FormValues = z.infer<typeof formSchema>
