@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Calendar, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronRight } from "lucide-react";
+import Calendar from "../calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [inputValue, setInputValue] = useState(formatDate(new Date()));
   const [viewMonth, setViewMonth] = useState(new Date());
+  const [showCalendarPopup, setShowCalendarPopup] = useState(false);
 
   function formatDate(date: Date) {
     const year = date.getFullYear();
@@ -138,7 +140,7 @@ export default function CalendarPage() {
         <Card className="shadow-lg">
           <CardHeader className="rounded-t-lg">
             <CardTitle className="flex items-center gap-2 ">
-              <Calendar className="w-4 h-4" />
+              <CalendarIcon className="w-4 h-4" />
               Calendar per week
             </CardTitle>
             <CardDescription>
@@ -146,19 +148,30 @@ export default function CalendarPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="flex gap-3">
-              <Input
-                type="date"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="flex-1"
-              />
-              <Button onClick={handleDateSearch}> Search </Button>
-              <Button onClick={goToToday} variant="outline">  Today </Button>
+            <div className="flex gap-3 relative">
+              <div className="flex-1">
+                <Calendar
+                  value={parseDate(inputValue)}
+                  onChange={(val) => {
+                    if (val instanceof Date) {
+                      const ds = formatDate(val);
+                      setInputValue(ds);
+                      setSelectedDate(ds);
+                      setViewMonth(val);
+                      setShowCalendarPopup(false);
+                    }
+                  }}
+                  showTime={false}
+                  selectionMode="single"
+                  inline
+                />
+
+              </div>
+              <Button onClick={goToToday} variant="outline"> Today </Button>
             </div>
 
             {selectedDate && (
-              <div className="py-4 rounded">
+              <div className="space-y-4 rounded">
                 <p className="font-semibold"> Selected date: {formatDisplay(parseDate(selectedDate))} </p>
                 <p className="mt-2">
                   Week {selectedWeek} of {parseDate(selectedDate).getFullYear()}
@@ -170,17 +183,30 @@ export default function CalendarPage() {
 
         <Card className="shadow-lg">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <Button onClick={goToPreviousMonth} variant="outline">
-                ← Prev month
+            <div className="flex items-center justify-between gap-2">
+              <Button
+                onClick={goToPreviousMonth}
+                variant="outline"
+                className="flex flex-col sm:flex-row items-center justify-center whitespace-normal text-center gap-1 max-w-24 h-auto"
+              >
+                <span>←</span>
+                <span>Prev month</span>
               </Button>
-              <CardTitle>
+
+              <CardTitle className="text-center">
                 {currentMonthDisplay}
               </CardTitle>
-              <Button onClick={goToNextMonth} variant="outline">
-                Next month →
+
+              <Button
+                onClick={goToNextMonth}
+                variant="outline"
+                className="flex flex-col sm:flex-row items-center justify-center whitespace-normal text-center gap-1 max-w-24  h-auto"
+              >
+                <span>Next month</span>
+                <span>→</span>
               </Button>
             </div>
+
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-2">
@@ -197,7 +223,7 @@ export default function CalendarPage() {
 
               {weeks.map((week, weekIdx) => (
                 <div key={weekIdx} className="grid grid-cols-8 gap-1">
-                  <div className="flex items-center justify-center text-secondary-foreground shadow-lg font-bold rounded-lg text-xs">
+                  <div className="flex items-center justify-center text-secondary-foreground shadow-lg font-bold rounded-lg text-xs p-1">
                     W {week.weekNumber} <ChevronRight className="w-3 h-3" />
                   </div>
                   {week.days.map((day, dayIdx) => (
@@ -229,5 +255,5 @@ export default function CalendarPage() {
         </Card>
       </div>
     </div>
-  );
+  )
 }
