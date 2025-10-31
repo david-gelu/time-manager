@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Link, useNavigate, useLocation } from "react-router"
 import { toast } from "sonner"
+import { Separator } from "../ui/separator"
 
 export function Login() {
   const [email, setEmail] = useState("")
@@ -97,9 +98,12 @@ export function Login() {
           {isLoading ? "Authenticating..." : "Connect with Google"}
         </Button>
 
-        <p className="text-center text-sm">
+        <div className="text-center text-sm">
           Don't have an account? <Link to="/auth/register" className="text-primary hover:underline">Create one</Link>
-        </p>
+
+          <Separator orientation="vertical" />
+          <Link to="/" className="text-primary hover:underline">Back to home page</Link>
+        </div>
       </div>
     </div>
   )

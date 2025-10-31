@@ -3,9 +3,10 @@ import {
   BadgeCheck,
   ChevronsUpDown,
   CircleUserRound,
+  LogIn,
   LogOut,
 } from "lucide-react"
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import {
   Avatar,
   AvatarFallback,
@@ -63,9 +64,9 @@ export function NavUser() {
   const handleLogout = async () => {
     try {
       await logout()
-      toast.success('Deconectare reușită')
+      toast.success('Logout successful')
     } catch (err) {
-      toast.error('Deconectarea a eșuat')
+      toast.error('Logout failed')
     }
   }
   return (
@@ -118,13 +119,9 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Button
-                onClick={handleLogout}
-                variant="destructive"
-                className="w-full"
-              >
-                <LogOut /> Deconectare
-              </Button>
+              {user ?
+                <Button onClick={handleLogout} variant="destructive" className="w-full">Logout <LogOut className="text-white" /> </Button> :
+                <Button className="w-full flex gap-2"><Link to="/auth/login">Login </Link><LogIn className="text-primary-foreground" /></Button>}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

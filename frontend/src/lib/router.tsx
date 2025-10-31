@@ -7,12 +7,13 @@ import { Login } from '@/components/auth/Login'
 import { Register } from '@/components/auth/Register'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import Home from '@/components/pages/home'
 import { UserDashboard } from '@/components/auth/UserDashboard'
 import { auth } from '@/lib/firebase'
 import KanbanBoard from '@/components/pages/kanban-board'
 import DailyTasks from '@/components/pages/daily-tasks'
 import CalendarPage from '@/components/pages/calendar-page'
+import LandingPage from '@/components/pages/landing-page'
+import DashBoard from '@/components/pages/dashboard'
 
 const queryClient = new QueryClient()
 
@@ -29,20 +30,43 @@ function Providers({ children }: { children: React.ReactNode }) {
 
 export const router = createBrowserRouter([
   {
-    path: 'auth',
-    element: <Providers><Outlet /></Providers>,
+    path: '/',
+    element: <Providers><App /></Providers>,
     errorElement: <ErrorBoundary />,
     children: [
       {
+        index: true,
+        element: <LandingPage />
+      },
+      {
+        path: 'calendar',
+        element: <CalendarPage />
+      },
+      {
+        path: 'dashboard',
+        element: <ProtectedRoute><DashBoard /></ProtectedRoute>
+      },
+      {
+        path: 'daily-tasks',
+        element: <ProtectedRoute><DailyTasks /></ProtectedRoute>
+      },
+      {
+        path: 'kanban',
+        element: <ProtectedRoute><KanbanBoard /></ProtectedRoute>
+      },
+      {
+        path: 'profile',
+        element: <ProtectedRoute><UserDashboard /></ProtectedRoute>
+      }
+    ]
+  },
+  {
+    path: 'auth',
+    element: <Providers><Outlet /></Providers>,
+    children: [
+      {
         path: 'login',
-        element: <Login />,
-        loader: async () => {
-          const currentUser = auth.currentUser
-          if (currentUser) {
-            return redirect('/')
-          }
-          return null
-        }
+        element: <Login />
       },
       {
         path: 'register',
@@ -54,33 +78,6 @@ export const router = createBrowserRouter([
           }
           return null
         }
-      }
-    ]
-  },
-  {
-    path: '/',
-    element: <Providers><App /></Providers>,
-    errorElement: <ErrorBoundary />,
-    children: [
-      {
-        index: true,
-        element: <ProtectedRoute><Home /></ProtectedRoute>
-      },
-      {
-        path: 'daily-tasks',
-        element: <ProtectedRoute><DailyTasks /></ProtectedRoute>
-      },
-      {
-        path: 'profile',
-        element: <ProtectedRoute><UserDashboard /></ProtectedRoute>
-      },
-      {
-        path: 'kanban',
-        element: <ProtectedRoute><KanbanBoard /></ProtectedRoute>
-      },
-      {
-        path: 'calendar',
-        element: <ProtectedRoute><CalendarPage /></ProtectedRoute>
       }
     ]
   }

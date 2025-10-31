@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 
-const Home = () => {
+const DashBoard = () => {
   const queryClient = useQueryClient();
 
   const { data: dailysCountStatusNew = 0, isFetching } = useCountDailysWithStatusNew()
@@ -287,4 +287,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default DashBoard

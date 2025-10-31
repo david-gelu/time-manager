@@ -24,23 +24,26 @@ import {
 } from "./components/ui/breadcrumb"
 
 // import Calendar, { type CalendarValue } from "./components/calendar"
-import { Kanban, Logs, Gauge, CalendarSearch } from "lucide-react"
-import { Outlet, Link, useLocation } from "react-router"
+import { Kanban, Logs, Gauge, CalendarSearch, Cat, House } from "lucide-react"
+import { Outlet, Link, useLocation, useNavigate } from "react-router"
 import { useState } from "react"
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NavUser } from "./components/nav-user"
 import AddNewTask from "./components/add-new-task"
 import { ColumnWidthProvider } from "./contexts/ColumnWidthContext"
+import { Button } from "./components/ui/button"
 
 export default function App() {
   const [openItems, setOpenItems] = useState<string[]>([])
   // const [selectedDate, setSelectedDate] = useState<CalendarValue>(new Date())
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
   const menuItems = [
     {
-      title: "Dashboard",
+      title: "Home",
       url: "/",
-      icon: Gauge,
+      icon: House,
       children: []
     },
     {
@@ -56,12 +59,24 @@ export default function App() {
       children: []
     },
     {
+      title: "DashBoard",
+      url: "/dashboard",
+      icon: Gauge,
+      children: []
+    },
+    {
       title: "Calendar",
       url: "/calendar",
       icon: CalendarSearch,
       children: []
     },
-  ]
+  ].filter(item => {
+    // If user is not logged in, only show Home and Calendar
+    if (!user) {
+      return item.title === "Home" || item.title === "Calendar"
+    }
+    return true
+  })
 
   const location = useLocation()
   const pathnames = location.pathname.split("/").filter(Boolean)
@@ -123,6 +138,8 @@ export default function App() {
 
     return breadcrumbs
   }
+
+
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -186,7 +203,7 @@ export default function App() {
                   </Breadcrumb>
                 </div>
                 <div className="shrink-0 ml-auto flex items-center gap-2">
-                  <AddNewTask />
+                  {user ? <AddNewTask /> : <Button><Link to="/auth/login">Login</Link></Button>}
                   {/* <Calendar inline showTime selectionMode="range" value={selectedDate} onChange={setSelectedDate} /> */}
                   <ModeToggle />
                 </div>
