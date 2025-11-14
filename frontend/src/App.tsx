@@ -79,7 +79,7 @@ export default function App() {
   ].filter(item => {
     // If user is not logged in, only show Home and Calendar
     if (!user) {
-      return item.title === "Home" || item.title === "Calendar"
+      return item.title === "Home" || item.title === "Calendar" || item.title === "Time Zones"
     }
     return true
   })
