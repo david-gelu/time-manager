@@ -21,7 +21,6 @@ Time Manager is a comprehensive task management application built with React, Ty
 - Search functionality for finding tasks
 
 ### 2. Kanban Board
-- Drag-and-drop interface
 - Three columns: New, In Progress, Completed
 - Visual task organization
 - Real-time status updates
@@ -122,7 +121,6 @@ yarn dev
 - Checklist functionality
 
 ### KanbanBoard
-- Drag-and-drop task organization
 - Status column management
 - Task card interactions
 - Progress visualization
