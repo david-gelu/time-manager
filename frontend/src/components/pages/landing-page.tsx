@@ -74,7 +74,7 @@ export default function LandingPage() {
         ))}
       </div>
 
-      <Card>
+      <Card className="my-6">
         <CardHeader>
           <CardTitle>Key Features</CardTitle>
         </CardHeader>
