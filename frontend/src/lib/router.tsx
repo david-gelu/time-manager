@@ -14,6 +14,7 @@ import DailyTasks from '@/components/pages/daily-tasks'
 import CalendarPage from '@/components/pages/calendar-page'
 import LandingPage from '@/components/pages/landing-page'
 import DashBoard from '@/components/pages/dashboard'
+import TimeConverter from '@/components/pages/time-zone'
 
 const queryClient = new QueryClient()
 
@@ -41,6 +42,10 @@ export const router = createBrowserRouter([
       {
         path: 'calendar',
         element: <CalendarPage />
+      },
+      {
+        path: '/time-zones',
+        element: <TimeConverter />
       },
       {
         path: 'dashboard',

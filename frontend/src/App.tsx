@@ -24,7 +24,7 @@ import {
 } from "./components/ui/breadcrumb"
 
 // import Calendar, { type CalendarValue } from "./components/calendar"
-import { Kanban, Logs, Gauge, CalendarSearch, Cat, House } from "lucide-react"
+import { Kanban, Logs, Gauge, CalendarSearch, Cat, House, Globe } from "lucide-react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router"
 import { useState } from "react"
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -68,6 +68,12 @@ export default function App() {
       title: "Calendar",
       url: "/calendar",
       icon: CalendarSearch,
+      children: []
+    },
+    {
+      title: "Time Zones",
+      url: "/time-zones",
+      icon: Globe,
       children: []
     },
   ].filter(item => {
