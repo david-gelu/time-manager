@@ -317,8 +317,8 @@ export default function TimeConverter() {
   );
 
   return (
-    <div className="max-h-[90dvh] overflow-y-auto w-full p-2 flex items-start justify-center">
-      <div className="w-full space-y-5">
+    <div className="max-h-[90dvh] overflow-y-auto w-full p-2 flex items-start justify-center gap-3">
+      <div className="w-full flex flex-col gap-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
             <Globe className="w-8 h-8" />
@@ -331,7 +331,7 @@ export default function TimeConverter() {
           <CardHeader>
             <CardTitle>🇷🇴 What time is it in Romania?</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="my-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Select Source Country */}
               <div className="flex flex-col gap-2">
@@ -460,9 +460,6 @@ export default function TimeConverter() {
         </Card>
 
         <Card className="shadow-xl">
-          <CardHeader>
-            <CardTitle></CardTitle>
-          </CardHeader>
           <CardContent className="flex items-start flex-col gap-3">
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="w-full flex items-center gap-3">
