@@ -49,7 +49,7 @@ export default function LandingPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6 max-h-[90dvh] overflow-y-auto">
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-2xl">Welcome to Time Manager</CardTitle>
           <CardDescription>
