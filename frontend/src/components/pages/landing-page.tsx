@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, CheckSquare, Gauge, KanbanSquare, User } from "lucide-react"
+import { Calendar, CheckSquare, Gauge, Globe, KanbanSquare, User } from "lucide-react"
 
 export default function LandingPage() {
   const features = [
@@ -24,6 +24,11 @@ export default function LandingPage() {
       description: "Weekly calendar view to plan and track tasks. Search by date and see which week of the year it falls in."
     },
     {
+      icon: <Globe className="w-6 h-6" />,
+      title: "Global Time Zone Converter",
+      description: "  Instantly convert time between any of the world's 195+ countries and timezones. Perfect for international scheduling and coordination."
+    },
+    {
       icon: <User className="w-6 h-6" />,
       title: "Profile Management",
       description: "Manage your account settings and preferences."
@@ -37,6 +42,7 @@ export default function LandingPage() {
     "Search Functionality",
     // "Drag and Drop Task Organization",
     "Weekly Calendar Planning",
+    "Compare time across multiple countries simultaneously.",
     "Progress Tracking",
     "User Authentication"
   ]
@@ -101,6 +107,10 @@ export default function LandingPage() {
           <div>
             <h3 className="font-semibold mb-2">4. Plan with Calendar</h3>
             <p className="text-muted-foreground">Use the calendar view to plan your tasks and see your schedule by week.</p>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">5. Multi-Country Comparison</h3>
+            <p className="text-muted-foreground">  Compare time across multiple countries simultaneously. Add or remove timezones instantly to find the perfect meeting time.</p>
           </div>
         </CardContent>
       </Card>
