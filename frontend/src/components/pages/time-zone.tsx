@@ -253,7 +253,7 @@ export default function TimeConverter() {
   const [searchValue, setSearchValue] = useState("");
 
   const [sourceTimezone, setSourceTimezone] = useState("Europe/Bucharest");
-  const [sourceTime, setSourceTime] = useState("20:00");
+  const [sourceTime, setSourceTime] = useState(format(new Date(), "HH:mm"));
   const [openSourceTz, setOpenSourceTz] = useState(false);
   const [searchSourceTz, setSearchSourceTz] = useState("");
 
@@ -290,18 +290,55 @@ export default function TimeConverter() {
 
   const calculateRomaniaTime = () => {
     const [hours, minutes] = sourceTime.split(":").map(Number);
-    const sourceDate = new Date();
-    sourceDate.setHours(hours, minutes, 0, 0);
 
-    const sourceZonedTime = toZonedTime(sourceDate, sourceTimezone);
-    const romaniaTime = toZonedTime(sourceZonedTime, "Europe/Bucharest");
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const day = today.getDate();
+
+    const referenceDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
+
+    const getOffset = (date: Date, tz: string): number => {
+      const tzTime = new Date(date.toLocaleString('en-US', { timeZone: tz }));
+      const utcTime = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+      return (tzTime.getTime() - utcTime.getTime()) / (1000 * 60); // offset in minute
+    };
+
+    const sourceOffset = getOffset(referenceDate, sourceTimezone);
+    const romaniaOffset = getOffset(referenceDate, 'Europe/Bucharest');
+
+    const sourceMinutesFromMidnight = hours * 60 + minutes;
+    const utcMinutesFromMidnight = sourceMinutesFromMidnight - sourceOffset;
+
+    const romaniaMinutesFromMidnight = utcMinutesFromMidnight + romaniaOffset;
+
+    let romaniaHours = Math.floor(romaniaMinutesFromMidnight / 60);
+    let romaniaMinutes = romaniaMinutesFromMidnight % 60;
+    let romaniaDayOffset = 0;
+    let sourceDayOffset = 0;
+
+    if (romaniaHours < 0) {
+      romaniaHours += 24;
+      romaniaDayOffset = -1;
+    } else if (romaniaHours >= 24) {
+      romaniaHours -= 24;
+      romaniaDayOffset = 1;
+    }
+
+    if (romaniaMinutes < 0) {
+      romaniaMinutes += 60;
+      romaniaHours -= 1;
+    }
+
+    const sourceDate = new Date(year, month, day + sourceDayOffset, hours, minutes);
+    const romaniaDate = new Date(year, month, day + romaniaDayOffset, romaniaHours, romaniaMinutes);
 
     return {
-      sourceTime: format(sourceZonedTime, "HH:mm"),
-      romaniaTime: format(romaniaTime, "HH:mm"),
+      sourceTime: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`,
+      romaniaTime: `${String(romaniaHours).padStart(2, '0')}:${String(romaniaMinutes).padStart(2, '0')}`,
       sourceTimezone,
-      sourceDate: format(sourceZonedTime, "EEEE, MMMM d"),
-      romaniaDate: format(romaniaTime, "EEEE, MMMM d"),
+      sourceDate: format(sourceDate, "EEEE, MMMM d"),
+      romaniaDate: format(romaniaDate, "EEEE, MMMM d"),
     };
   };
 
@@ -397,11 +434,18 @@ export default function TimeConverter() {
                 <Label className="text-sm font-medium">Time (24h format)</Label>
                 <div className="flex gap-2">
                   <Input
-                    type="number"
-                    min="0"
-                    max="23"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={2}
                     value={sourceTime.split(":")[0]}
                     onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      const hours = Math.min(23, parseInt(value || '0')).toString();
+                      const minutes = sourceTime.split(":")[1];
+                      setSourceTime(`${hours}:${minutes}`);
+                    }}
+                    onBlur={(e) => {
                       const hours = e.target.value.padStart(2, "0");
                       const minutes = sourceTime.split(":")[1];
                       setSourceTime(`${hours}:${minutes}`);
@@ -411,11 +455,18 @@ export default function TimeConverter() {
                   />
                   <span className="flex items-center">:</span>
                   <Input
-                    type="number"
-                    min="0"
-                    max="59"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={2}
                     value={sourceTime.split(":")[1]}
                     onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      const minutes = Math.min(59, parseInt(value || '0')).toString();
+                      const hours = sourceTime.split(":")[0];
+                      setSourceTime(`${hours}:${minutes}`);
+                    }}
+                    onBlur={(e) => {
                       const hours = sourceTime.split(":")[0];
                       const minutes = e.target.value.padStart(2, "0");
                       setSourceTime(`${hours}:${minutes}`);
