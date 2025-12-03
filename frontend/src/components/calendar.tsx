@@ -4,7 +4,6 @@ import { Button } from "./ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from "./ui/dialog";
 import { format } from "date-fns";
 import type { Nullable } from "primereact/ts-helpers";
-import { type AllHTMLAttributes } from "react";
 import { normalizeCalendarValue } from "@/lib/utils";
 
 export type CalendarValue = Nullable<Date | Date[] | (Date | null)[]>;
@@ -26,6 +25,7 @@ interface CalendarProps {
   selectionMode?: "single" | "multiple" | "range";
   desc?: string;
   inline?: boolean;
+  showWeek?: boolean;
 }
 
 export default function Calendar({
@@ -35,6 +35,7 @@ export default function Calendar({
   selectionMode = "single",
   desc,
   inline,
+  showWeek,
 }: CalendarProps) {
   const [open, setOpen] = useState(false);
   const [tempValue, setTempValue] = useState<CalendarValue>(value);
@@ -88,6 +89,7 @@ export default function Calendar({
         </DialogHeader>
         <PrimereactCalendar
           inline={inline}
+          showWeek={showWeek}
           id="calendar"
           value={tempValue}
           onChange={(e) => setTempValue(e.value)}
@@ -116,8 +118,9 @@ export default function Calendar({
                   backgroundColor: 'hsl(var(--secondary) / 0.1)'
                 })
               }
-            })
+            }),
           }}
+          ptOptions={{ mergeSections: true, mergeProps: true }}
         />
         <div className="text-muted-foreground">
           <strong>Selected:</strong> {formatDateLabel(tempValue, selectionMode)}

@@ -164,6 +164,7 @@ export default function CalendarPage() {
                   showTime={false}
                   selectionMode="single"
                   inline
+                  showWeek
                 />
 
               </div>

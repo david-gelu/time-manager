@@ -269,7 +269,6 @@ body {
   background: var(--scrollbar-thumb-hover);
 }
 
-/* Elimină săgețile și colțurile */
 *::-webkit-scrollbar-button,
 *::-webkit-scrollbar-button:single-button {
   display: none;
@@ -278,4 +277,11 @@ body {
 }
 *::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+:is(.p-datepicker-weeknumber > .p-disabled, .p-datepicker-weekheader.p-disabled) {
+  color: var(--primary);
+  opacity: 1;
+  font-size: 0.75rem;
+  font-weight: bold;
 }
