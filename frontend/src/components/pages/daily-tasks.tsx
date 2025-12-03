@@ -39,7 +39,6 @@ export default function DailyTasks() {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<DailyTasks | null>(null);
 
-  // Get tasks for a specific date
   const getTasksForDate = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
     return tasks.filter((task) => {
@@ -48,18 +47,14 @@ export default function DailyTasks() {
     });
   };
 
-  // Get all days in the current week
   const getWeekDays = () => {
     return Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
   };
 
-  // Get tasks for the selected date
   const selectedDateTasks = getTasksForDate(selectedDate);
 
-  // Get tasks for the entire week
   const weekDays = getWeekDays();
 
-  // Navigation functions
   const goToPreviousWeek = () => {
     setCurrentWeekStart(addDays(currentWeekStart, -7));
   };
@@ -74,7 +69,6 @@ export default function DailyTasks() {
     setSelectedDate(today);
   };
 
-  // Handle actions
   const handleAddSubTask = (task: DailyTasks) => {
     setSelectedTask(task);
     setOpenModal(true);
@@ -116,7 +110,6 @@ export default function DailyTasks() {
 
   return (
     <div className="w-full p-4 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Daily Tasks</h1>
         <Button onClick={goToToday} variant="outline">
@@ -124,14 +117,12 @@ export default function DailyTasks() {
         </Button>
       </div>
 
-      {/* Tabs */}
       <Tabs defaultValue="calendar" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="calendar" className="cursor-pointer">Calendar View</TabsTrigger>
           <TabsTrigger value="table" className="cursor-pointer">Table View</TabsTrigger>
         </TabsList>
 
-        {/* ===== CALENDAR VIEW TAB ===== */}
         <TabsContent value="calendar" className="space-y-4">
           <Card>
             <CardHeader>
@@ -157,7 +148,7 @@ export default function DailyTasks() {
                   Loading tasks...
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-7 gap-2 bg-background">
+                <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
                   {weekDays.map((day, index) => {
                     const dayTasks = getTasksForDate(day);
                     const isToday = isSameDay(day, new Date());
@@ -165,11 +156,10 @@ export default function DailyTasks() {
                     return (
                       <div
                         key={index}
-                        className="p-3 rounded-lg border-2 transition cursor-pointer"
+                        className={`p-3 rounded-lg border-2 ${isToday ? 'border-primary' : ""} transition cursor-pointer bg-background`}
                         onClick={() => setSelectedDate(day)}
                       >
-                        {/* Day Header */}
-                        <div className={`mb-3 ${isToday ? "rounded outline-2 outline-offset-6 outline-solid" : ""}`}>
+                        <div className='mb-3'>
                           <p className="font-semibold text-sm">
                             {format(day, "EEE")}
                             <span className="ms-2 text-lg font-bold">{format(day, "d")}</span>
@@ -181,7 +171,6 @@ export default function DailyTasks() {
                           )}
                         </div>
 
-                        {/* Tasks for Day */}
                         <div className="space-y-2 h-100 max-h-[45dvh] overflow-y-auto">
                           {dayTasks.length > 0 ? (
                             dayTasks.map((task) => (
@@ -209,7 +198,6 @@ export default function DailyTasks() {
                                     </span>
                                   </div>
 
-                                  {/* Actions Menu */}
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button
@@ -279,7 +267,6 @@ export default function DailyTasks() {
         </TabsContent>
       </Tabs>
 
-      {/* Modals */}
       {openModal && (
         <AddSubTask
           open={openModal}
