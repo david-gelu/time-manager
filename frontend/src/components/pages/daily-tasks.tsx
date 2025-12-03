@@ -3,19 +3,27 @@ import { format, startOfWeek, addDays, isSameDay, getWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, ChevronRight, CheckCircle2, Circle, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Circle, MoreHorizontal, ListChecks, ListTodo, List } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import { useAllDailyTasks } from "@/lib/queries";
-import { Status, type DailyTasks } from "@/types";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useSearchParams } from "react-router";
-import { deleteDailyTask, duplicateDailyTask } from "@/lib/dailyTasks";
+import { Status, type DailyTasks, type Task } from "@/types";
+import { deleteDailyTask, duplicateDailyTask, deleteSubTask, updateSubTaskStatus } from "@/lib/dailyTasks";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import TableComponent from "../table/table";
@@ -23,11 +31,10 @@ import AddSubTask from "../add-sub-task";
 import EditTask from "../edit-tasks";
 import Calendar, { type CalendarValue } from "../calendar";
 import { motion } from "framer-motion";
+import ResizableSubTasksTable from "../resizable-sub-tasks-table";
 
 export default function DailyTasks() {
-
   const queryClient = useQueryClient();
-
   const { data: tasks = [], isLoading, error } = useAllDailyTasks();
 
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(
@@ -37,6 +44,9 @@ export default function DailyTasks() {
   const [openModal, setOpenModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<DailyTasks | null>(null);
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const [drawerTask, setDrawerTask] = useState<DailyTasks | null>(null);
+  const [selectedSubTask, setSelectedSubTask] = useState<Task | null>(null);
 
   const getTasksForDate = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
@@ -49,8 +59,6 @@ export default function DailyTasks() {
   const getWeekDays = () => {
     return Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
   };
-
-  const selectedDateTasks = getTasksForDate(selectedDate);
 
   const weekDays = getWeekDays();
 
@@ -76,6 +84,11 @@ export default function DailyTasks() {
     }
   };
 
+  const handleTaskClick = (task: DailyTasks) => {
+    setDrawerTask(task);
+    setOpenDrawer(true);
+  };
+
   const handleAddSubTask = (task: DailyTasks) => {
     setSelectedTask(task);
     setOpenModal(true);
@@ -86,13 +99,17 @@ export default function DailyTasks() {
     setOpenEditModal(true);
   };
 
+  const handleEditSubTask = (subTask: Task) => {
+    setSelectedSubTask(subTask);
+    setOpenEditModal(true);
+  };
+
   const handleDuplicateTask = async (task: DailyTasks) => {
     try {
       await duplicateDailyTask(task);
       toast.success(`${task.name} task was duplicated successfully`);
       queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] });
     } catch (err) {
-      console.error(`🚀 ~ err:`, err);
       toast.error("Failed to duplicate task");
     }
   };
@@ -107,6 +124,17 @@ export default function DailyTasks() {
     }
   };
 
+  const handleDeleteSubTask = async (subTaskId: string, taskName: string) => {
+    try {
+      await deleteSubTask(subTaskId);
+      toast.success(`${taskName} task deleted successfully`);
+      queryClient.invalidateQueries({ queryKey: ['allDailyTasks'] });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete task");
+    }
+  };
+
   if (error) {
     return (
       <div className="p-4 text-center">
@@ -116,11 +144,9 @@ export default function DailyTasks() {
   }
 
   return (
-    <div
-      className="w-full p-4 space-y-6">
+    <div className="w-full p-4 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Daily Tasks</h1>
-
       </div>
 
       <Tabs defaultValue="table" className="w-full">
@@ -155,9 +181,7 @@ export default function DailyTasks() {
                       inline
                       showWeek
                     />
-                    <Button onClick={goToToday} variant="outline">
-                      Today
-                    </Button>
+                    <Button onClick={goToToday} variant="outline"> Today</Button>
                     <Button variant="outline" size="sm" onClick={goToPreviousWeek}>
                       <ChevronLeft className="w-4 h-4" /> Previous week
                     </Button>
@@ -177,14 +201,11 @@ export default function DailyTasks() {
                   <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
                     {weekDays.map((day, index) => {
                       const dayTasks = getTasksForDate(day);
-                      const isToday = isSameDay(day, new Date());
                       const isSelected = isSameDay(day, selectedDate);
-
                       return (
                         <div
                           key={index}
-                          className={`p-3 bg-background rounded-lg border-2 transition cursor-pointer ${isSelected ? "border-primary" : "border-border"
-                            }`}
+                          className={`p-3 bg-background rounded-lg border-2 transition cursor-pointer ${isSelected ? "border-primary" : "border-border"}`}
                           onClick={() => setSelectedDate(day)}
                         >
                           <div className='mb-3'>
@@ -199,29 +220,43 @@ export default function DailyTasks() {
                             )}
                           </div>
 
-                          <div className="space-y-2 h-100 max-h-[45dvh] overflow-y-auto">
+                          <div className="space-y-2 h-97 overflow-y-auto">
                             {dayTasks.length > 0 ? (
                               dayTasks.map((task) => (
                                 <div
                                   key={task._id}
                                   className={`
-                                    mb-2
-                                  group relative p-2 rounded text-xs cursor-pointer transition hover:shadow-md 
-                                  ${task.status === Status.COMPLETED
-                                      ? "bg-secondary"
-                                      : task.status === Status.IN_PROGRESS
-                                        ? "bg-primary"
-                                        : "bg-destructive"
-                                    }`}
-                                  onClick={(e) => e.stopPropagation()}
+                                    mb-2 group relative p-2 rounded text-xs cursor-pointer transition hover:shadow-md 
+                                    ${task.status === Status.COMPLETED ? "bg-secondary" : task.status === Status.IN_PROGRESS ? "bg-primary" : "bg-destructive"}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleTaskClick(task)
+                                  }}
                                 >
                                   <div className="flex items-start justify-between gap-1">
                                     <div className="flex items-start gap-1 flex-1 min-w-0">
-                                      {task.status === Status.COMPLETED ? (
-                                        <CheckCircle2 className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
-                                      ) : (
-                                        <Circle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                      )}
+                                      {task.status === Status.COMPLETED ?
+                                        <Tooltip>
+                                          <TooltipTrigger> <ListChecks className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" /></TooltipTrigger>
+                                          <TooltipContent side="left">
+                                            {task.name} is completed
+                                          </TooltipContent>
+                                        </Tooltip>
+                                        : task.status === Status.IN_PROGRESS ?
+                                          <Tooltip>
+                                            <TooltipTrigger> <ListTodo className="w-3 h-3 mt-0.5 flex-shrink-0" /></TooltipTrigger>
+                                            <TooltipContent side="left">
+                                              {task.name} is in progress
+                                            </TooltipContent>
+                                          </Tooltip>
+                                          :
+                                          <Tooltip>
+                                            <TooltipTrigger> <List className="w-3 h-3 mt-0.5 flex-shrink-0" /></TooltipTrigger>
+                                            <TooltipContent side="left">
+                                              {task.name} is new
+                                            </TooltipContent>
+                                          </Tooltip>
+                                      }
                                       <span className="break-words line-clamp-2">
                                         {task.name}
                                       </span>
@@ -239,7 +274,10 @@ export default function DailyTasks() {
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
                                         <Tooltip>
-                                          <DropdownMenuItem onClick={() => handleAddSubTask(task)}>
+                                          <DropdownMenuItem onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddSubTask(task);
+                                          }}>
                                             <TooltipTrigger>Add sub task</TooltipTrigger>
                                           </DropdownMenuItem>
                                           <TooltipContent side="left">
@@ -248,7 +286,10 @@ export default function DailyTasks() {
                                         </Tooltip>
 
                                         <Tooltip>
-                                          <DropdownMenuItem onClick={() => handleEditTask(task)}>
+                                          <DropdownMenuItem onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditTask(task);
+                                          }}>
                                             <TooltipTrigger>Edit daily task</TooltipTrigger>
                                           </DropdownMenuItem>
                                           <TooltipContent side="left">
@@ -257,7 +298,10 @@ export default function DailyTasks() {
                                         </Tooltip>
 
                                         <Tooltip>
-                                          <DropdownMenuItem onClick={() => handleDuplicateTask(task)}>
+                                          <DropdownMenuItem onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDuplicateTask(task);
+                                          }}>
                                             <TooltipTrigger>Duplicate daily task</TooltipTrigger>
                                           </DropdownMenuItem>
                                           <TooltipContent side="left">
@@ -266,7 +310,10 @@ export default function DailyTasks() {
                                         </Tooltip>
 
                                         <Tooltip>
-                                          <DropdownMenuItem onClick={() => handleDeleteTask(task)}>
+                                          <DropdownMenuItem onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteTask(task);
+                                          }}>
                                             <TooltipTrigger>Delete daily task</TooltipTrigger>
                                           </DropdownMenuItem>
                                           <TooltipContent side="left">
@@ -297,6 +344,48 @@ export default function DailyTasks() {
         </TabsContent>
       </Tabs>
 
+      <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className="flex items-center gap-2">
+              {drawerTask?.name}
+              <Badge
+                variant={drawerTask?.status === Status.COMPLETED ? 'secondary' : drawerTask?.status === Status.IN_PROGRESS ? 'default' : 'destructive'}
+                className="capitalize"
+              >
+                {drawerTask?.status}
+              </Badge>
+            </DrawerTitle>
+            <DrawerDescription>
+              {drawerTask?.description || "No description"}
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div className="px-4 max-h-[60vh] overflow-y-auto">
+            {drawerTask && drawerTask.tasks && drawerTask.tasks.length > 0 ? (
+              <ResizableSubTasksTable
+                tasks={drawerTask.tasks}
+                onDelete={handleDeleteSubTask}
+                onEdit={handleEditSubTask}
+                onStatusChange={(id, status) => updateSubTaskStatus(id, status as Status)}
+              />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No sub tasks available
+              </div>
+            )}
+          </div>
+          <DrawerFooter>
+            <Button variant="outline" onClick={() => drawerTask && handleAddSubTask(drawerTask)}>
+              Add Subtask
+            </Button>
+            <DrawerClose asChild>
+              <Button variant="secondary">Close</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
       {openModal && (
         <AddSubTask
           open={openModal}
@@ -309,6 +398,7 @@ export default function DailyTasks() {
           open={openEditModal}
           onOpenChange={setOpenEditModal}
           dailyTask={selectedTask as DailyTasks}
+          subTask={selectedSubTask as Task}
         />
       )}
     </div>
