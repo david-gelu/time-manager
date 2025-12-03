@@ -22,15 +22,13 @@ import TableComponent from "../table/table";
 import AddSubTask from "../add-sub-task";
 import EditTask from "../edit-tasks";
 import Calendar, { type CalendarValue } from "../calendar";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function DailyTasks() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
-  const debouncedSearch = useDebounce(searchInput, 500);
+
   const queryClient = useQueryClient();
 
-  const { data: tasks = [], isLoading, error } = useAllDailyTasks(debouncedSearch);
+  const { data: tasks = [], isLoading, error } = useAllDailyTasks();
 
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(
     startOfWeek(new Date(), { weekStartsOn: 1 })
@@ -52,13 +50,10 @@ export default function DailyTasks() {
     return Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
   };
 
-  // Get tasks for the selected date
   const selectedDateTasks = getTasksForDate(selectedDate);
 
-  // Get tasks for the entire week
   const weekDays = getWeekDays();
 
-  // Navigation functions
   const goToPreviousWeek = () => {
     setCurrentWeekStart(addDays(currentWeekStart, -7));
   };
@@ -73,7 +68,6 @@ export default function DailyTasks() {
     setSelectedDate(today);
   };
 
-  // Handle calendar date selection
   const handleDateChange = (value: CalendarValue) => {
     if (value instanceof Date) {
       const weekStart = startOfWeek(value, { weekStartsOn: 1 });
@@ -82,7 +76,6 @@ export default function DailyTasks() {
     }
   };
 
-  // Handle actions
   const handleAddSubTask = (task: DailyTasks) => {
     setSelectedTask(task);
     setOpenModal(true);
@@ -212,6 +205,7 @@ export default function DailyTasks() {
                                 <div
                                   key={task._id}
                                   className={`
+                                    mb-2
                                   group relative p-2 rounded text-xs cursor-pointer transition hover:shadow-md 
                                   ${task.status === Status.COMPLETED
                                       ? "bg-secondary"
