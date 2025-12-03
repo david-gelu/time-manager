@@ -198,7 +198,7 @@ export default function DailyTasks() {
                     Loading tasks...
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-7 gap-2 overflow-y-auto max-h-[60vh]">
                     {weekDays.map((day, index) => {
                       const dayTasks = getTasksForDate(day);
                       const isSelected = isSameDay(day, selectedDate);
