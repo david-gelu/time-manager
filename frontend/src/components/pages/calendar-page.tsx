@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Calendar as CalendarIcon, ChevronRight } from "lucide-react";
+import { ArrowBigLeftDash, ArrowBigRightDash, CalendarDays, Calendar as CalendarIcon, ChevronRight } from "lucide-react";
 import Calendar from "../calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
@@ -150,25 +150,38 @@ export default function CalendarPage() {
           <CardContent className="pt-2">
             <div className="flex gap-3 relative">
               <div className="flex-1">
-                <Calendar
-                  value={parseDate(inputValue)}
-                  onChange={(val) => {
-                    if (val instanceof Date) {
-                      const ds = formatDate(val);
-                      setInputValue(ds);
-                      setSelectedDate(ds);
-                      setViewMonth(val);
-                      setShowCalendarPopup(false);
-                    }
-                  }}
-                  showTime={false}
-                  selectionMode="single"
-                  inline
-                  showWeek
-                />
-
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Calendar
+                      value={parseDate(inputValue)}
+                      onChange={(val) => {
+                        if (val instanceof Date) {
+                          const ds = formatDate(val);
+                          setInputValue(ds);
+                          setSelectedDate(ds);
+                          setViewMonth(val);
+                          setShowCalendarPopup(false);
+                        }
+                      }}
+                      showTime={false}
+                      selectionMode="single"
+                      inline
+                      showWeek
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    Select date from calendar
+                  </TooltipContent>
+                </Tooltip>
               </div>
-              <Button onClick={goToToday} variant="outline"> Today </Button>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button onClick={goToToday} variant="outline" size="sm"> <CalendarDays className="w-3/4 h-3/4" /></Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Today
+                </TooltipContent>
+              </Tooltip>
             </div>
 
             {selectedDate && (
@@ -185,27 +198,25 @@ export default function CalendarPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between gap-2">
-              <Button
-                onClick={goToPreviousMonth}
-                variant="outline"
-                className="flex flex-col sm:flex-row items-center justify-center whitespace-normal text-center gap-1 max-w-24 h-auto"
-              >
-                <span>←</span>
-                <span>Prev month</span>
-              </Button>
-
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button variant="outline" size="sm" onClick={goToPreviousMonth}><ArrowBigLeftDash className="w-3/4 h-3/4" /></Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Previous month
+                </TooltipContent>
+              </Tooltip>
               <CardTitle className="text-center">
                 {currentMonthDisplay}
               </CardTitle>
-
-              <Button
-                onClick={goToNextMonth}
-                variant="outline"
-                className="flex flex-col sm:flex-row items-center justify-center whitespace-normal text-center gap-1 max-w-24  h-auto"
-              >
-                <span>Next month</span>
-                <span>→</span>
-              </Button>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button variant="outline" size="sm" onClick={goToNextMonth}><ArrowBigRightDash className="w-3/4 h-3/4" /></Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Previous month
+                </TooltipContent>
+              </Tooltip>
             </div>
 
           </CardHeader>

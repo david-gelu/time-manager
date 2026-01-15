@@ -63,8 +63,8 @@ export default function KanbanBoard() {
           className="min-h-[15rem] max-h-[90dvh] rounded-lg border"
         >
           <ResizablePanel defaultSize={33.34}>
-            <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
-              <div className="sticky top-0 bg-background w-full rounded shadow py-2 z-10">
+            <div className="bg-card flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
+              <div className="sticky top-0 bg-card w-full rounded shadow py-2 z-10">
                 <div className="flex flex-wrap gap-2 justify-between items-center">
                   <span className="font-semibold capitalize min-w-[150px]">Status: {Status.NEW}</span>
                   <Input
@@ -132,8 +132,8 @@ export default function KanbanBoard() {
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={33.33}>
-            <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
-              <div className="sticky top-0 bg-background w-full rounded shadow py-2 z-10">
+            <div className="bg-card flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
+              <div className="sticky top-0 bg-card w-full rounded shadow py-2 z-10">
                 <div className="flex flex-wrap gap-2 justify-between items-center">
                   <span className="font-semibold capitalize min-w-[150px]">Status: {Status.IN_PROGRESS}</span>
                   <Input
@@ -201,8 +201,8 @@ export default function KanbanBoard() {
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={33.33}>
-            <div className="flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
-              <div className="sticky top-0 bg-background w-full rounded shadow py-2 z-10">
+            <div className="bg-card flex flex-col gap-1 h-full p-2 pt-0 overflow-y-auto">
+              <div className="sticky top-0 bg-card w-full rounded shadow py-2 z-10">
                 <div className="flex flex-wrap gap-2 justify-between items-center">
                   <span className="font-semibold capitalize min-w-[150px]">Status: {Status.COMPLETED}</span>
                   <Input

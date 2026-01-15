@@ -3,7 +3,7 @@ import { format, startOfWeek, addDays, isSameDay, getWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, ChevronRight, CheckCircle2, Circle, MoreHorizontal, ListChecks, ListTodo, List, ArrowBigLeftDash, ArrowBigRightDash, CalendarDays } from "lucide-react";
+import { MoreHorizontal, ListChecks, ListTodo, List, ArrowBigLeftDash, ArrowBigRightDash, CalendarDays } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
