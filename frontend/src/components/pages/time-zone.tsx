@@ -366,7 +366,7 @@ export default function TimeConverter() {
 
         <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle>🇷🇴 What time is it in Romania?</CardTitle>
+            <CardTitle>🇷🇴 Time in Romania for the selected timezone</CardTitle>
           </CardHeader>
           <CardContent className="my-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -510,8 +510,12 @@ export default function TimeConverter() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-xl">
-          <CardContent className="flex items-start flex-col gap-3">
+        {/* Time Zones Result */}
+        <Card className="shadow-xl overflow-y-auto max-h-[500px]">
+          <CardHeader>
+            <CardTitle>Date and Time in Other Time Zones (Based on Romania)</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="w-full flex items-center gap-3">
                 <Label className="text-sm">Select Hour</Label>
@@ -574,7 +578,7 @@ export default function TimeConverter() {
                 </Popover>
               </div>
             </div>
-            <div className="w-full">
+            <div className="w-full my-3">
               <div className="bg-background p-4 rounded-lg">
                 <p className="text-sm">
                   Selected:
@@ -585,15 +589,8 @@ export default function TimeConverter() {
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Time Zones Result */}
-        <Card className="shadow-xl overflow-y-auto max-h-[500px]">
-          <CardHeader>
-            <CardTitle>Time in Different Time Zones</CardTitle>
-          </CardHeader>
-          <CardContent>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {timeInZones.map((item) => (
                 <div

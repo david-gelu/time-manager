@@ -3,7 +3,7 @@ import { format, startOfWeek, addDays, isSameDay, getWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, ChevronRight, CheckCircle2, Circle, MoreHorizontal, ListChecks, ListTodo, List } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Circle, MoreHorizontal, ListChecks, ListTodo, List, ArrowBigLeftDash, ArrowBigRightDash, CalendarDays } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -162,7 +162,7 @@ export default function DailyTasks() {
             transition={{ delay: 0.2 }}>
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex gap-3">
                   <div>
                     <CardTitle>
                       Week of {format(currentWeekStart, "MMM d")} -{" "}
@@ -172,22 +172,46 @@ export default function DailyTasks() {
                       Week {getWeek(currentWeekStart, { weekStartsOn: 1 })} of {format(currentWeekStart, "yyyy")}
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <Calendar
-                      value={currentWeekStart}
-                      onChange={handleDateChange}
-                      selectionMode="single"
-                      desc="Select a date to view its week"
-                      inline
-                      showWeek
-                    />
-                    <Button onClick={goToToday} variant="outline"> Today</Button>
-                    <Button variant="outline" size="sm" onClick={goToPreviousWeek}>
-                      <ChevronLeft className="w-4 h-4" /> Previous week
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={goToNextWeek}>
-                      Next week <ChevronRight className="w-4 h-4" />
-                    </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Calendar
+                          value={currentWeekStart}
+                          onChange={handleDateChange}
+                          selectionMode="single"
+                          desc="Select a date to view its week"
+                          inline
+                          showWeek
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        Select date to view week
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Button variant="outline" size="sm" onClick={goToPreviousWeek}> <ArrowBigLeftDash className="w-3/4 h-3/4" /></Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        Previous week
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Button onClick={goToToday} variant="outline" size="sm"> <CalendarDays className="w-3/4 h-3/4" /></Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        Today
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Button variant="outline" size="sm" onClick={goToNextWeek}><ArrowBigRightDash className="w-3/4 h-3/4" /></Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        Next week
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </CardHeader>
