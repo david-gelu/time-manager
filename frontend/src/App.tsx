@@ -24,9 +24,9 @@ import {
 } from "./components/ui/breadcrumb"
 
 // import Calendar, { type CalendarValue } from "./components/calendar"
-import { Kanban, Logs, Gauge, CalendarSearch, Cat, House, Globe } from "lucide-react"
+import { Kanban, Logs, Gauge, CalendarSearch, House, Globe, RefreshCw } from "lucide-react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NavUser } from "./components/nav-user"
 import AddNewTask from "./components/add-new-task"
@@ -145,7 +145,66 @@ export default function App() {
     return breadcrumbs
   }
 
+  const [quote, setQuote] = useState<{ quote: string, author: string } | null>(null)
+  const [filteredQuotesList, setFilteredQuotesList] = useState<any[]>([]);
+  const fetchAllQuotes = async () => {
+    const url = `https://dummyjson.com/quotes?limit=100`;
 
+    const categories = ['Change',
+      'Choice',
+      'Confidence',
+      'Courage',
+      'Excellence',
+      'Future',
+      'Happiness',
+      'Inspiration',
+      'Kindness',
+      'Leadership',
+      'Love',
+      'Success',
+      'Work',
+    ]
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Error getting data from API");
+
+      const data = await res.json();
+
+      if (data && data.quotes && data.quotes.length > 0) {
+        const filtered = data.quotes.filter((citat: any) => {
+          const quote = citat.quote.toLowerCase();
+          return categories.some(cuvant => quote.includes(cuvant));
+        });
+
+        const finalList = filtered.length > 0 ? filtered : data.quotes;
+
+        setFilteredQuotesList(finalList);
+
+        const randomQuote = finalList[Math.floor(Math.random() * finalList.length)];
+        setQuote({
+          quote: randomQuote.quote,
+          author: randomQuote.author,
+        });
+      }
+    } catch (err) {
+      console.error("API Error:", err);
+    }
+  };
+
+  const handleNextQuoteClick = () => {
+    if (filteredQuotesList.length > 0) {
+      const randomQuote = filteredQuotesList[Math.floor(Math.random() * filteredQuotesList.length)];
+      setQuote({
+        quote: randomQuote.quote,
+        author: randomQuote.author,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchAllQuotes();
+  }, []);
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -213,8 +272,31 @@ export default function App() {
                   {/* <Calendar inline showTime selectionMode="range" value={selectedDate} onChange={setSelectedDate} /> */}
                   <ModeToggle />
                 </div>
-              </header>
 
+              </header>
+              <div className="p-6 mx-auto">
+                {quote ? (
+                  <div className="flex flex-col align-items-center justify-content-center">
+                    <blockquote className="m-0">
+                      <p style={{ fontSize: '0.9rem', fontWeight: 'bold', fontStyle: 'italic' }}>
+                        "{quote.quote}"
+                        <cite style={{ marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 'normal', fontStyle: 'normal', color: 'var(--text-color)' }}>— {quote.author}</cite>
+                      </p>
+                    </blockquote>
+
+                    <Button
+                      onClick={handleNextQuoteClick}
+                      variant={'outline'}
+                      size="sm"
+                      className="m-auto"
+                    >
+                      <RefreshCw /> New quote
+                    </Button>
+                  </div>
+                ) : (
+                  <p>Loading quote...</p>
+                )}
+              </div>
               <main className="flex flex-col items-center justify-center">
                 <Outlet />
               </main>
